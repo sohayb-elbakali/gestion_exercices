@@ -155,6 +155,7 @@ public class ChoixMatiereController {
             // Gestion des erreurs
             handleException(e, "Erreur lors de l'ouverture de la page Mes Exercices");
         }
+
     }
 
     /**
@@ -171,6 +172,27 @@ public class ChoixMatiereController {
         alert.setHeaderText(header);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+    @FXML
+    private void ouvrirMesSolutions() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mes_solutions.fxml"));
+            Parent root = loader.load();
+
+            MesSolutionsController mesSolutionsController = loader.getController();
+            mesSolutionsController.setCreateurId(createurId);
+
+            Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
+            currentStage.close();
+
+            Stage stage = new Stage();
+            stage.setTitle("Mes Solutions");
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            handleException(e, "Erreur lors de l'ouverture de la page Mes Solutions");
+        }
     }
 
     /**

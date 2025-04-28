@@ -18,5 +18,7 @@
     <Button text="Valider" onAction="#validerMatiere"/>
 
     <Button text="Mes Exercices" onAction="#ouvrirMesExercices"/> <!-- nouveau bouton ajouté ici -->
+    <!-- Nouveau bouton pour accéder à Mes Solutions -->
+    <Button text="Mes Solutions" onAction="#ouvrirMesSolutions" style="-fx-background-color: #FFC107; -fx-text-fill: black;" />
 
 </VBox>

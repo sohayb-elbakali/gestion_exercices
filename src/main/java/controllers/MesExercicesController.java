@@ -90,15 +90,20 @@ public class MesExercicesController {
     /**
      * Crée les boutons d'action (Modifier/Supprimer) pour chaque ligne.
      */
+    /**
+     * Crée les boutons d'action (Modifier/Supprimer/Voir les solutions) pour chaque ligne.
+     */
     private TableCell<Exercice, Void> createActionButtons() {
         return new TableCell<>() {
             private final Button modifyButton = new Button("Modifier");
             private final Button deleteButton = new Button("Supprimer");
+            private final Button viewSolutionsButton = new Button("Voir les solutions");
 
             {
                 // Style des boutons
                 modifyButton.getStyleClass().add("button-modify");
                 deleteButton.getStyleClass().add("button-delete");
+                viewSolutionsButton.getStyleClass().add("button-view-solutions");
 
                 // Action pour modifier un exercice
                 modifyButton.setOnAction(event -> {
@@ -111,6 +116,34 @@ public class MesExercicesController {
                     Exercice exercice = getTableView().getItems().get(getIndex());
                     confirmAndDeleteExercise(exercice);
                 });
+
+                // Action pour voir les solutions d'un exercice
+                viewSolutionsButton.setOnAction(event -> {
+                    Exercice exercice = getTableView().getItems().get(getIndex());
+                    openViewSolutionsDialog(exercice);
+                });
+            }
+            /**
+             * Ouvre la boîte de dialogue pour afficher les solutions d'un exercice.
+             */
+            private void openViewSolutionsDialog(Exercice exercice) {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/liste_solutions.fxml"));
+                    Parent root = loader.load();
+
+                    ListeSolutionsController controller = loader.getController();
+                    controller.setExerciceId(exercice.getId()); // Passer l'ID de l'exercice sélectionné
+
+                    Stage stage = new Stage();
+                    stage.setTitle("Solutions pour l'exercice - " + exercice.getTitre());
+                    stage.setScene(new Scene(root));
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.showAndWait();
+
+                } catch (IOException e) {
+                    showErrorAlert("Erreur", "Impossible d'ouvrir la liste des solutions: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -119,7 +152,7 @@ public class MesExercicesController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox buttonContainer = new HBox(5, modifyButton, deleteButton);
+                    HBox buttonContainer = new HBox(5, modifyButton, deleteButton, viewSolutionsButton);
                     buttonContainer.setAlignment(javafx.geometry.Pos.CENTER);
                     setGraphic(buttonContainer);
                 }

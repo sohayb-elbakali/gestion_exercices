@@ -17,7 +17,7 @@
         <columns>
             <TableColumn fx:id="titreColumn" text="Titre" prefWidth="200" />
             <TableColumn fx:id="dateColumn" text="Date de création" prefWidth="150" />
-            <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150" />
+            <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="200" />
         </columns>
     </TableView>
 
