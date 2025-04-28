@@ -1,4 +1,3 @@
-// ExerciceController.java
 package controllers;
 
 import javafx.collections.FXCollections;
@@ -32,9 +31,11 @@ public class ExerciceController {
 
     @FXML
     public void initialize() {
+        // Initialisation des colonnes du TableView
         titreColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("dateCreation"));
 
+        // Formatage de la date dans la colonne "Date de création"
         dateColumn.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(LocalDateTime item, boolean empty) {
@@ -47,7 +48,7 @@ public class ExerciceController {
 
     public void setMatiere(Matiere matiere) {
         this.matiereId = matiere.getId();
-        loadExercices();
+        loadExercices(); // Charger les exercices liés à cette matière
     }
 
     public void setCreateurId(int id) {
@@ -71,7 +72,7 @@ public class ExerciceController {
             dialog.setScene(new Scene(root));
             dialog.showAndWait();
 
-            loadExercices();
+            loadExercices(); // Recharger les exercices après ajout
         } catch (IOException e) {
             showAlert("Erreur lors de l'ouverture de la fenêtre: " + e.getMessage());
             e.printStackTrace();
@@ -129,14 +130,6 @@ public class ExerciceController {
         }
     }
 
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
     @FXML
     private void handleVoirDetails() {
         Exercice selected = exerciceTable.getSelectionModel().getSelectedItem();
@@ -161,6 +154,64 @@ public class ExerciceController {
         } else {
             showAlert("Veuillez sélectionner un exercice pour voir ses détails.");
         }
+    }
 
+    @FXML
+    private void handleAddSolution() {
+        Exercice selected = exerciceTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ajout_solution.fxml"));
+                Parent root = loader.load();
+
+                AjoutSolutionController controller = loader.getController();
+                controller.setExerciceId(selected.getId()); // Passer l'ID de l'exercice sélectionné
+                controller.setCreateurId(createurId); // Passer l'ID de l'auteur (créateur)
+
+                Stage dialog = new Stage();
+                dialog.setTitle("Ajouter une solution");
+                dialog.initModality(Modality.APPLICATION_MODAL);
+                dialog.setScene(new Scene(root));
+                dialog.showAndWait();
+            } catch (IOException e) {
+                showAlert("Erreur lors de l'ouverture de la fenêtre: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showAlert("Veuillez sélectionner un exercice pour ajouter une solution.");
+        }
+    }
+
+    @FXML
+    private void handleViewSolutions() {
+        Exercice selected = exerciceTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/liste_solutions.fxml"));
+                Parent root = loader.load();
+
+                ListeSolutionsController controller = loader.getController();
+                controller.setExerciceId(selected.getId()); // Passer l'ID de l'exercice sélectionné
+
+                Stage stage = new Stage();
+                stage.setTitle("Solutions pour l'exercice - " + selected.getTitre());
+                stage.setScene(new Scene(root));
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.show();
+            } catch (IOException e) {
+                showAlert("Erreur lors de l'ouverture des solutions: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showAlert("Veuillez sélectionner un exercice pour voir ses solutions.");
+        }
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Erreur");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

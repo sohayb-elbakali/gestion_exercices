@@ -9,16 +9,28 @@
 
     <top>
         <ToolBar>
+            <!-- Bouton pour ajouter un exercice -->
             <Button text="Ajouter un exercice" onAction="#handleAddExercice"/>
+
+            <!-- Bouton pour ouvrir le chat -->
             <Button text="Ouvrir le chat" onAction="#handleOpenChat"/>
-            <Button text="Voir Détails" onAction="#handleVoirDetails"/> <!-- bouton ajouté ici -->
+
+            <!-- Bouton pour voir les détails d'un exercice -->
+            <Button text="Voir Détails" onAction="#handleVoirDetails"/>
+
+            <!-- Bouton pour ajouter une solution -->
+            <Button text="Ajouter une solution" onAction="#handleAddSolution"/>
+
+            <!-- Bouton pour voir les solutions -->
+            <Button text="Voir les solutions" onAction="#handleViewSolutions"/>
         </ToolBar>
     </top>
 
     <center>
+        <!-- Table pour afficher la liste des exercices -->
         <TableView fx:id="exerciceTable">
             <columns>
-                <TableColumn text="Titre" fx:id="titreColumn" prefWidth="200"/>
+                <TableColumn text="Titre" fx:id="titreColumn" prefWidth="250"/>
                 <TableColumn text="Date de création" fx:id="dateColumn" prefWidth="150"/>
             </columns>
         </TableView>
