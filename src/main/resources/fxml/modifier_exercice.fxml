@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ModifierExerciceController" spacing="15" padding="20">
+    <!-- Titre -->
+    <Label text="Modifier un exercice" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+
+    <!-- Formulaire -->
+    <GridPane hgap="10" vgap="10">
+        <Label text="Titre :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+        <TextField fx:id="titreField" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+        <Label text="Description :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+        <TextArea fx:id="descriptionArea" prefRowCount="5" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+        <!-- Boutons -->
+        <HBox spacing="10" alignment="CENTER_RIGHT" GridPane.rowIndex="2" GridPane.columnSpan="2">
+            <Button text="Annuler" onAction="#handleCancel" style="-fx-background-color: #FF4D4D; -fx-text-fill: white;" />
+            <Button text="Enregistrer" onAction="#handleSave" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+        </HBox>
+    </GridPane>
+</VBox>

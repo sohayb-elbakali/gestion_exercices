@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MesExercicesController" spacing="15">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+
+    <!-- Titre de la page -->
+    <Label text="Mes Exercices" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+
+    <!-- Tableau des exercices -->
+    <TableView fx:id="exerciceTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="titreColumn" text="Titre" prefWidth="200" />
+            <TableColumn fx:id="dateColumn" text="Date de création" prefWidth="150" />
+            <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150" />
+        </columns>
+    </TableView>
+
+    <!-- Bouton Retour -->
+    <Button text="Retour" onAction="#handleBack" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+</VBox>
