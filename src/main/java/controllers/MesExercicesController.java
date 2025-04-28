@@ -216,24 +216,34 @@ public class MesExercicesController {
     /**
      * Gère le retour à l'écran précédent.
      */
+
+
     @FXML
     private void handleBack() {
         if (primaryStage == null) {
             LOGGER.severe("primaryStage is null. Ensure setPrimaryStage is called.");
+            showErrorAlert("Erreur", "Impossible de revenir à l'écran précédent : primaryStage est null.");
             return;
         }
 
         try {
+            // Charger le fichier FXML pour la vue Choix Matière
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/choix_matiere.fxml"));
             Parent root = loader.load();
+            LOGGER.info("FXMLLoader successfully loaded choix_matiere.fxml");
 
+            // Récupérer le contrôleur associé à la vue chargée
             ChoixMatiereController choixMatiereController = loader.getController();
-            choixMatiereController.setCreateurId(createurId); // Transmettez le createurId
+            choixMatiereController.setCreateurId(createurId);
 
+            // Mettre à jour la scène avec choix_matiere.fxml
             primaryStage.setScene(new Scene(root));
+            primaryStage.show(); // Afficher la nouvelle scène
+            LOGGER.info("Navigating back to choix_matiere.fxml");
 
         } catch (IOException e) {
-            showErrorAlert("Erreur", "Impossible de revenir à l'écran précédent.");
+            LOGGER.log(Level.SEVERE, "Erreur lors du chargement de choix_matiere.fxml", e);
+            showErrorAlert("Erreur", "Impossible de charger la page précédente : " + e.getMessage());
         }
     }
 

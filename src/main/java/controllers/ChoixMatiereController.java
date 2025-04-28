@@ -123,24 +123,36 @@ public class ChoixMatiereController {
      */
     @FXML
     private void ouvrirMesExercices() {
-        System.out.println("createurId : " + createurId);
+        System.out.println("createurId : " + createurId); // Pour le débogage
         try {
+            // Charger le fichier FXML pour la vue MesExercices
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MesExercices.fxml"));
             Parent root = loader.load();
 
-            MesExercicesController mesexercicescontroller = loader.getController();
-            mesexercicescontroller.setCreateurId(createurId);
+            // Récupérer le contrôleur associé à la vue chargée
+            MesExercicesController mesExercicesController = loader.getController();
 
+            // Transmettre l'ID du créateur au contrôleur
+            mesExercicesController.setCreateurId(createurId);
+
+            // Transmettre la référence de la fenêtre principale (primaryStage)
+            Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
+            mesExercicesController.setPrimaryStage(currentStage);
+
+            // Créer une nouvelle scène et afficher la fenêtre Mes Exercices
+            Scene scene = new Scene(root);
             Stage stage = new Stage();
             stage.setTitle("Mes Exercices");
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
 
-            Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
+            // Fermer la fenêtre actuelle (Choix Matière)
             currentStage.close();
 
+            // Afficher la nouvelle fenêtre
             stage.show();
 
         } catch (Exception e) {
+            // Gestion des erreurs
             handleException(e, "Erreur lors de l'ouverture de la page Mes Exercices");
         }
     }
