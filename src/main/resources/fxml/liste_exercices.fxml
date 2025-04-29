@@ -2,27 +2,48 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controllers.ExerciceController">
+            fx:controller="controllers.ExerciceController"
+            styleClass="root">
 
     <top>
-        <ToolBar>
-            <!-- Bouton pour ajouter un exercice -->
-            <Button text="Ajouter un exercice" onAction="#handleAddExercice"/>
-
-            <!-- Bouton pour ouvrir le chat -->
-            <Button text="Ouvrir le chat" onAction="#handleOpenChat"/>
-
-            <!-- Bouton pour voir les détails d'un exercice -->
-            <Button text="Voir Détails" onAction="#handleVoirDetails"/>
-
-            <!-- Bouton pour ajouter une solution -->
-            <Button text="Ajouter une solution" onAction="#handleAddSolution"/>
-
-            <!-- Bouton pour voir les solutions -->
-            <Button text="Voir les solutions" onAction="#handleViewSolutions"/>
+        <ToolBar styleClass="tool-bar">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <!-- Groupe 1: Gestion des exercices -->
+                <Button text="Ajouter un exercice" onAction="#handleAddExercice" 
+                       styleClass="button button-blue" style="-fx-background-color: #2196f3; -fx-text-fill: white;"/>
+                <Button text="Voir Détails" onAction="#handleVoirDetails" 
+                       styleClass="button button-blue" style="-fx-background-color: #2196f3; -fx-text-fill: white;"/>
+            </HBox>
+            
+            <Separator orientation="VERTICAL"/>
+            
+            <HBox spacing="10" alignment="CENTER">
+                <!-- Groupe 2: Gestion des solutions -->
+                <Button text="Ajouter une solution" onAction="#handleAddSolution" 
+                       styleClass="button button-green" style="-fx-background-color: #43a047; -fx-text-fill: white;"/>
+                <Button text="Voir les solutions" onAction="#handleViewSolutions" 
+                       styleClass="button button-green" style="-fx-background-color: #43a047; -fx-text-fill: white;"/>
+            </HBox>
+            
+            <Separator orientation="VERTICAL"/>
+            
+            <HBox spacing="10" alignment="CENTER">
+                <!-- Groupe 3: Communication -->
+                <Button text="Ouvrir le chat" onAction="#handleOpenChat" 
+                       styleClass="button button-yellow" style="-fx-background-color: #FFC107; -fx-text-fill: black;"/>
+            </HBox>
+            
+            <HBox spacing="10" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                <!-- Groupe 4: Navigation -->
+                <Button text="Retour" onAction="#handleRetour" 
+                       styleClass="button button-red" style="-fx-background-color: #e53935; -fx-text-fill: white;"/>
+                <Button text="Déconnexion" onAction="#handleLogout" 
+                       styleClass="button button-red" style="-fx-background-color: #e53935; -fx-text-fill: white;"/>
+            </HBox>
         </ToolBar>
     </top>
 

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.ExerciceController"
+           prefWidth="800" prefHeight="600">
+           
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Retour" onAction="#backToMatiereSelection" styleClass="button-back"/>
+                <Label text="Exercices" styleClass="title-label" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Ajouter un exercice" onAction="#openAddExerciseForm" styleClass="button-add"/>
+            </HBox>
+            
+            <Separator/>
+        </VBox>
+    </top>
+    
+    <center>
+        <TableView fx:id="exerciceTable">
+            <columns>
+                <TableColumn fx:id="titreColumn" text="Titre" prefWidth="300"/>
+                <TableColumn fx:id="dateColumn" text="Date de création" prefWidth="150"/>
+                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="250"/>
+            </columns>
+            <placeholder>
+                <Label text="Aucun exercice trouvé"/>
+            </placeholder>
+        </TableView>
+    </center>
+</BorderPane> 

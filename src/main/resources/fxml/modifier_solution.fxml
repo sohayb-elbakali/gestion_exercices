@@ -7,7 +7,7 @@
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controllers.ModifierSolutionController"
-      spacing="15">
+      spacing="15" styleClass="root">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20" />
     </padding>
@@ -20,5 +20,6 @@
     <TextArea fx:id="contenuField" prefRowCount="5" />
 
     <!-- Bouton pour soumettre les modifications -->
-    <Button text="Enregistrer" onAction="#handleSubmit" />
+    <Button text="Enregistrer" onAction="#handleSubmit" styleClass="button button-blue" />
+    <Button text="Retour" onAction="#handleRetour" styleClass="button button-red" />
 </VBox>

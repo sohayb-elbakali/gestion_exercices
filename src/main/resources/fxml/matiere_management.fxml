@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.MatiereManagementController"
+           prefWidth="800" prefHeight="600" styleClass="root">
+           
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="20" right="20" bottom="10" left="20"/>
+            </padding>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Retour" onAction="#handleBack" styleClass="button-red"/>
+                <Label text="Gestion des Matières" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Ajouter une matière" onAction="#openAddMatiereForm" styleClass="button-green"/>
+                <Button text="Actualiser" onAction="#refreshMatieres" styleClass="button-blue"/>
+            </HBox>
+            
+            <Separator/>
+        </VBox>
+    </top>
+    
+    <center>
+        <TableView fx:id="matiereTable" prefHeight="500">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+                <TableColumn fx:id="nomColumn" text="Nom" prefWidth="350"/>
+                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="300"/>
+            </columns>
+            <placeholder>
+                <Label text="Aucune matière trouvée"/>
+            </placeholder>
+        </TableView>
+    </center>
+    
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <padding>
+                <Insets top="10" right="20" bottom="20" left="20"/>
+            </padding>
+            <Label fx:id="statusLabel"/>
+        </HBox>
+    </bottom>
+</BorderPane> 

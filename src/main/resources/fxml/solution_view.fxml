@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.SolutionController"
+           prefWidth="800" prefHeight="600" styleClass="root">
+           
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Retour" onAction="#handleBack" styleClass="button-back"/>
+                <Label text="Solutions" styleClass="title-label" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="addSolutionButton" text="Ajouter une solution" onAction="#openAddSolutionForm" styleClass="button-add"/>
+            </HBox>
+            
+            <Separator/>
+        </VBox>
+    </top>
+    
+    <center>
+        <TableView fx:id="solutionTable">
+            <columns>
+                <TableColumn fx:id="contenuColumn" text="Contenu" prefWidth="300"/>
+                <TableColumn fx:id="dateColumn" text="Date de création" prefWidth="150"/>
+                <TableColumn fx:id="auteurColumn" text="Auteur" prefWidth="100"/>
+                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="200"/>
+            </columns>
+            <placeholder>
+                <Label text="Aucune solution trouvée"/>
+            </placeholder>
+        </TableView>
+    </center>
+</BorderPane> 

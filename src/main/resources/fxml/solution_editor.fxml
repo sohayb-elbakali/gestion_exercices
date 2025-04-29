@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.SolutionController"
+      prefWidth="500" prefHeight="400">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Solution" styleClass="form-label"/>
+    <TextArea fx:id="contenuField" promptText="Entrez votre solution" 
+              wrapText="true" prefHeight="250" styleClass="form-field"/>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="submitButton" text="Ajouter" onAction="#handleSubmit" styleClass="button-primary"/>
+        <Button text="Annuler" onAction="#handleRetour" styleClass="button-secondary"/>
+    </HBox>
+</VBox> 

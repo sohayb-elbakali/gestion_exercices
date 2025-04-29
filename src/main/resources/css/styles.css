@@ -1,0 +1,258 @@
+/* General background for root containers */
+.root, .grid-pane, .border-pane {
+    -fx-background-color: #f0f4f8;
+}
+
+/* Title labels */
+.title-label {
+    -fx-font-size: 24px;
+    -fx-text-fill: #333;
+    -fx-font-weight: bold;
+}
+
+/* Blue button */
+.button-blue {
+    -fx-background-color: #2196f3;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+.button-blue:hover {
+    -fx-background-color: #1976d2;
+}
+
+/* Red button */
+.button-red {
+    -fx-background-color: #e53935;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+.button-red:hover {
+    -fx-background-color: #b71c1c;
+}
+
+/* Green button */
+.button-green {
+    -fx-background-color: #43a047;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+.button-green:hover {
+    -fx-background-color: #2e7031;
+}
+
+/* Yellow button */
+.button-yellow {
+    -fx-background-color: #FFC107;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+.button-yellow:hover {
+    -fx-background-color: #FFA000;
+}
+
+/* ToolBar styling */
+.tool-bar {
+    -fx-background-color: #f8f9fa;
+    -fx-padding: 5;
+    -fx-spacing: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #dee2e6;
+}
+
+/* Make separator more visible */
+.separator:vertical .line {
+    -fx-background-color: #dee2e6;
+    -fx-border-color: #dee2e6;
+    -fx-pref-width: 1px;
+}
+
+/* General button style for spacing */
+.button {
+    -fx-padding: 8 16 8 16;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    cursor: pointer;  /* Add standard cursor property for Firefox compatibility */
+    -fx-effect: dropshadow(gaussian, #b0bec5, 2, 0, 0, 1);
+    -fx-background-insets: 0;
+    -fx-border-radius: 8;
+}
+
+/* TableView styling */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 1);
+}
+
+.table-view .column-header {
+    -fx-background-color: #f0f4f8;
+    -fx-font-weight: bold;
+}
+
+/* Make the app feel more polished */
+.root {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* More specific button styling for ToolBar */
+.tool-bar .button-blue {
+    -fx-background-color: #2196f3 !important;
+    -fx-text-fill: white !important;
+}
+
+.tool-bar .button-red {
+    -fx-background-color: #e53935 !important;
+    -fx-text-fill: white !important;
+}
+
+.tool-bar .button-green {
+    -fx-background-color: #43a047 !important;
+    -fx-text-fill: white !important;
+}
+
+.tool-bar .button-yellow {
+    -fx-background-color: #FFC107 !important;
+    -fx-text-fill: black !important;
+}
+
+/* Ensure CSS is really applied */
+.button.button-blue {
+    -fx-background-color: #2196f3 !important;
+}
+
+.button.button-red {
+    -fx-background-color: #e53935 !important;
+}
+
+.button.button-green {
+    -fx-background-color: #43a047 !important;
+}
+
+.button.button-yellow {
+    -fx-background-color: #FFC107 !important;
+}
+
+/* General styles */
+.root {
+    -fx-font-family: 'Arial';
+    -fx-background-color: #f5f5f5;
+    -fx-font-size: 14px;
+}
+
+/* Button styles */
+.button {
+    -fx-padding: 8 15;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    cursor: pointer;
+}
+
+.button-blue {
+    -fx-background-color: #4285F4;
+    -fx-text-fill: white;
+}
+
+.button-blue:hover {
+    -fx-background-color: derive(#4285F4, -10%);
+}
+
+.button-green {
+    -fx-background-color: #0F9D58;
+    -fx-text-fill: white;
+}
+
+.button-green:hover {
+    -fx-background-color: derive(#0F9D58, -10%);
+}
+
+.button-red {
+    -fx-background-color: #DB4437;
+    -fx-text-fill: white;
+}
+
+.button-red:hover {
+    -fx-background-color: derive(#DB4437, -10%);
+}
+
+.button-yellow {
+    -fx-background-color: #F4B400;
+    -fx-text-fill: white;
+}
+
+.button-yellow:hover {
+    -fx-background-color: derive(#F4B400, -10%);
+}
+
+.button-view {
+    -fx-background-color: #4285F4;
+    -fx-text-fill: white;
+}
+
+.button-edit {
+    -fx-background-color: #F4B400;
+    -fx-text-fill: white;
+}
+
+.button-delete {
+    -fx-background-color: #DB4437;
+    -fx-text-fill: white;
+}
+
+.button-add {
+    -fx-background-color: #0F9D58;
+    -fx-text-fill: white;
+}
+
+.button-solutions {
+    -fx-background-color: #4285F4;
+    -fx-text-fill: white;
+}
+
+/* Table styles */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #ddd;
+    -fx-border-width: 1;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #ddd;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 5;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #f0f0f0 transparent;
+    -fx-border-width: 1;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f9f9f9;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #d9eaff;
+}
+
+/* Form styles */
+.text-field, .text-area, .combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #ddd;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5;
+}
+
+.text-field:focused, .text-area:focused, .combo-box:focused {
+    -fx-border-color: #4285F4;
+} 

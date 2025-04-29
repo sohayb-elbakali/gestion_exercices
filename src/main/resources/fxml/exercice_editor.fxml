@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.ExerciceEditorController"
+      prefWidth="400" prefHeight="350">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Titre de l'exercice" styleClass="form-label"/>
+    <TextField fx:id="titreField" promptText="Entrez le titre de l'exercice" styleClass="form-field"/>
+
+    <Label text="Description" styleClass="form-label"/>
+    <TextArea fx:id="descriptionField" promptText="Entrez la description de l'exercice" 
+              wrapText="true" prefHeight="150" styleClass="form-field"/>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="submitButton" text="Ajouter" onAction="#handleSubmit" styleClass="button-primary"/>
+        <Button text="Annuler" onAction="#handleCancel" styleClass="button-secondary"/>
+    </HBox>
+</VBox> 
