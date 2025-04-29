@@ -3,29 +3,47 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
 
-<GridPane fx:controller="controllers.LoginController"
-          xmlns:fx="http://javafx.com/fxml" alignment="CENTER" hgap="10" vgap="10" styleClass="root">
-    
+<VBox xmlns:fx="http://javafx.com/fxml" alignment="CENTER" spacing="20" styleClass="root" fx:controller="controllers.LoginController">
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="30" right="30" bottom="30" left="30"/>
     </padding>
     
-    <Label text="Email :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-    <TextField fx:id="emailField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-
-    <Label text="Mot de passe :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-    <PasswordField fx:id="passwordField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-
-    <Label text="Rôle :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <ComboBox fx:id="roleComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-
-    <HBox spacing="10" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
-        <Button text="Se connecter" onAction="#handleLogin" style="-fx-background-color: #4285F4; -fx-text-fill: white;"/>
-        <Button text="S'inscrire" onAction="#handleRegister" style="-fx-background-color: #0F9D58; -fx-text-fill: white;"/>
-        <Button text="Retour" onAction="#handleRetour" style="-fx-background-color: #DB4437; -fx-text-fill: white;"/>
-    </HBox>
+    <!-- Logo and Title Section -->
+    <VBox alignment="CENTER" spacing="15">
+        <ImageView fitWidth="120" fitHeight="120" preserveRatio="true">
+            <Image url="@../images/education.png"/>
+        </ImageView>
+        
+        <Label text="Education Management System" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2196f3;"/>
+        <Label text="Connectez-vous pour accéder à votre compte" style="-fx-font-size: 14px; -fx-text-fill: #757575;"/>
+        <Separator prefWidth="400"/>
+    </VBox>
     
-    <Label fx:id="statusLabel" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" 
-           GridPane.halignment="CENTER" style="-fx-text-fill: red;"/>
-</GridPane>
+    <!-- Login Form -->
+    <GridPane alignment="CENTER" hgap="15" vgap="15">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+        
+        <Label text="Email :" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="emailField" promptText="Entrez votre email" prefWidth="300" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Mot de passe :" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <PasswordField fx:id="passwordField" promptText="Entrez votre mot de passe" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Rôle :" style="-fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="roleComboBox" prefWidth="300" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2">
+            <Button text="Se connecter" onAction="#handleLogin" style="-fx-background-color: #4285F4; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+            <Button text="S'inscrire" onAction="#handleRegister" style="-fx-background-color: #0F9D58; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+            <Button text="Retour" onAction="#handleRetour" style="-fx-background-color: #DB4437; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+        </HBox>
+        
+        <Label fx:id="statusLabel" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" 
+               GridPane.halignment="CENTER" style="-fx-text-fill: red;"/>
+    </GridPane>
+</VBox>
