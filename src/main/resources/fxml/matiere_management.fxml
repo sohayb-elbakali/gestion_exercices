@@ -6,21 +6,25 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="controllers.MatiereManagementController"
-           prefWidth="800" prefHeight="600" styleClass="root">
+           fx:controller="controllers.MatiereController"
+           prefWidth="800" prefHeight="600">
            
     <top>
         <VBox spacing="10">
             <padding>
-                <Insets top="20" right="20" bottom="10" left="20"/>
+                <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
             
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button text="Retour" onAction="#handleBack" styleClass="button-red"/>
-                <Label text="Gestion des Matières" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Button text="Retour" onAction="#handleBack" styleClass="button-back"/>
+                <Label text="Gestion des matières" styleClass="title-label" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Ajouter une matière" onAction="#openAddMatiereForm" styleClass="button-green"/>
-                <Button text="Actualiser" onAction="#refreshMatieres" styleClass="button-blue"/>
+                <Button text="Ajouter une matière" onAction="#openAddMatiereForm" styleClass="button-add"/>
+            </HBox>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Rafraîchir" onAction="#refreshMatieres" styleClass="button-refresh"/>
+                <Label fx:id="statusLabel" text="" />
             </HBox>
             
             <Separator/>
@@ -39,13 +43,4 @@
             </placeholder>
         </TableView>
     </center>
-    
-    <bottom>
-        <HBox alignment="CENTER_RIGHT" spacing="10">
-            <padding>
-                <Insets top="10" right="20" bottom="20" left="20"/>
-            </padding>
-            <Label fx:id="statusLabel"/>
-        </HBox>
-    </bottom>
 </BorderPane> 

@@ -6,22 +6,27 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Utilisateur;
 import utils.IconHelper;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PushbackInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller for user management including login, registration, and authentication
+ * This controller consolidates login functionality from LoginController
  */
 public class UtilisateurController {
+    private static final Logger LOGGER = Logger.getLogger(UtilisateurController.class.getName());
 
+    // FXML components for login
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private ComboBox<String> roleComboBox;
+    @FXML private Label statusLabel;
     
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
     private Stage currentStage;
@@ -37,6 +42,11 @@ public class UtilisateurController {
     public void initialize() {
         if (roleComboBox != null) {
             roleComboBox.getItems().addAll("Étudiant", "Professeur");
+            roleComboBox.setValue("Étudiant"); // Default selection
+        }
+        
+        if (statusLabel != null) {
+            statusLabel.setText(""); // Clear status message
         }
     }
 
@@ -46,35 +56,86 @@ public class UtilisateurController {
         String password = passwordField.getText();
         String role = roleComboBox.getValue();
 
+        // Basic validation
+        if (email == null || email.isEmpty() || password == null || password.isEmpty() || role == null) {
+            showStatus("Veuillez remplir tous les champs.", true);
+            return;
+        }
+
         try {
             Utilisateur utilisateur = utilisateurDAO.findByEmailAndPasswordAndRole(email, password, role);
             
             if (utilisateur != null) {
                 int userId = utilisateur.getId();
-                openMatiereSelection(userId);
+                openMatiereSelection(userId, role);
             } else {
-                showAlert(Alert.AlertType.ERROR, "Authentification", "Identifiants incorrects", 
-                          "Veuillez vérifier votre email et mot de passe.");
+                showStatus("Identifiants incorrects. Veuillez vérifier votre email et mot de passe.", true);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de connexion", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error during login", e);
+            showStatus("Erreur de connexion: " + e.getMessage(), true);
+        }
+    }
+    
+    @FXML
+    private void handleRegister() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register_view.fxml"));
+            Parent root = loader.load();
+            
+            RegisterController controller = loader.getController();
+            
+            Stage stage = new Stage();
+            stage.setTitle("Inscription");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            IconHelper.setStageIcon(stage);
+            stage.showAndWait();
+            
+            // Show success message if registration was successful
+            if (Boolean.TRUE.equals(stage.getUserData())) {
+                showStatus("Inscription réussie! Vous pouvez maintenant vous connecter.", false);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error opening registration form", e);
+            showStatus("Erreur lors de l'ouverture du formulaire d'inscription: " + e.getMessage(), true);
+        }
+    }
+    
+    @FXML
+    private void handleRetour() {
+        // If there's a welcome screen to go back to, implement navigation here
+        // For now, we'll just clear the form
+        clearForm();
+    }
+    
+    private void clearForm() {
+        if (emailField != null) emailField.clear();
+        if (passwordField != null) passwordField.clear();
+        if (roleComboBox != null) roleComboBox.setValue("Étudiant");
+        if (statusLabel != null) statusLabel.setText("");
+    }
+    
+    /**
+     * Display a status message
+     */
+    private void showStatus(String message, boolean isError) {
+        if (statusLabel != null) {
+            statusLabel.setText(message);
+            statusLabel.setStyle("-fx-text-fill: " + (isError ? "red" : "green"));
         }
     }
     
     /**
      * Opens the matiere selection screen
      */
-    private void openMatiereSelection(int userId) {
+    private void openMatiereSelection(int userId, String role) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/matiere_view.fxml"));
             Parent root = loader.load();
 
             MatiereController controller = loader.getController();
             controller.setUserId(userId);
-            
-            // Set the user role
-            String role = roleComboBox.getValue();
             controller.setUserRole(role);
             
             Scene scene = new Scene(root);
@@ -88,16 +149,15 @@ public class UtilisateurController {
             
             closeCurrentStage();
         } catch (IOException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Navigation impossible", 
-                     "Impossible d'ouvrir l'écran de sélection de matière: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error opening matiere selection", e);
+            showStatus("Impossible d'ouvrir l'écran de sélection de matière: " + e.getMessage(), true);
         }
     }
     
     @FXML
     private void handleLogout() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login_view.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
             Parent root = loader.load();
             
             Scene scene = new Scene(root);
@@ -111,7 +171,7 @@ public class UtilisateurController {
             
             closeCurrentStage();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error logging out", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Déconnexion impossible", e.getMessage());
         }
     }
@@ -120,7 +180,10 @@ public class UtilisateurController {
         if (currentStage != null) {
             currentStage.close();
         } else if (emailField != null) {
-            ((Stage) emailField.getScene().getWindow()).close();
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            if (stage != null) {
+                stage.close();
+            }
         }
     }
     
