@@ -118,23 +118,6 @@ public class UtilisateurController {
     }
     
     /**
-     * Réinitialise le formulaire (action Retour).
-     */
-    @FXML
-    private void handleRetour() {
-        // S'il existe une page d'accueil à laquelle revenir, la navigation sera implémentée ici
-        // Pour l'instant, nous effaçons uniquement le formulaire
-        clearForm();
-    }
-    
-    private void clearForm() {
-        if (emailField != null) emailField.clear();
-        if (passwordField != null) passwordField.clear();
-        if (roleComboBox != null) roleComboBox.setValue("Étudiant");
-        if (statusLabel != null) statusLabel.setText("");
-    }
-    
-    /**
      * Affiche un message de statut sur l'interface.
      */
     private void showStatus(String message, boolean isError) {
