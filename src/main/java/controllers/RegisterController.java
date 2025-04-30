@@ -10,11 +10,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller for user registration
+ * Contrôleur pour le formulaire d'inscription des utilisateurs :
+ *  • Validation des champs
+ *  • Création d'un nouvel Utilisateur via UtilisateurDAO
  */
 public class RegisterController {
     private static final Logger LOGGER = Logger.getLogger(RegisterController.class.getName());
     
+    // === Composants FXML : Champs du formulaire ===
     @FXML private TextField nomField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
@@ -22,16 +25,25 @@ public class RegisterController {
     @FXML private ComboBox<String> roleComboBox;
     @FXML private Label statusLabel;
     
+    // === Attributs principaux ===
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
     
+    // === Initialisation de la vue ===
     @FXML
+    /**
+     * Initialise le ComboBox des rôles et réinitialise le label de statut.
+     */
     public void initialize() {
         roleComboBox.getItems().addAll("Étudiant", "Professeur");
         roleComboBox.setValue("Étudiant");
         statusLabel.setText("");
     }
     
+    // === Gestion des événements utilisateur ===
     @FXML
+    /**
+     * Valide les champs et traite l'inscription de l'utilisateur.
+     */
     private void handleRegister() {
         // Validate form
         if (!validateForm()) {
@@ -70,12 +82,16 @@ public class RegisterController {
     }
     
     @FXML
+    /**
+     * Annule l'inscription et ferme la fenêtre.
+     */
     private void handleCancel() {
         getStage().close();
     }
     
+    // === Méthodes utilitaires ===
     /**
-     * Validate registration form inputs
+     * Vérifie la validité des saisies du formulaire et affiche les erreurs le cas échéant.
      */
     private boolean validateForm() {
         if (nomField.getText().trim().isEmpty()) {
@@ -117,7 +133,7 @@ public class RegisterController {
     }
     
     /**
-     * Show a status message
+     * Affiche un message de succès ou d'erreur sous le formulaire.
      */
     private void showStatus(String message, boolean isError) {
         statusLabel.setText(message);
@@ -125,7 +141,7 @@ public class RegisterController {
     }
     
     /**
-     * Get the current stage
+     * Récupère la stage actuelle pour fermer la fenêtre de dialogue.
      */
     private Stage getStage() {
         return (Stage) emailField.getScene().getWindow();

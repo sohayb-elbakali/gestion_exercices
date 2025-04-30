@@ -16,29 +16,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller for user management including login, registration, and authentication
- * This controller consolidates login functionality from LoginController
+ * Controller principal pour la gestion des utilisateurs :
+ *  • Connexion (login)
+ *  • Inscription (register)
+ *  • Déconnexion (logout)
+ *  • Navigation vers la sélection de matière
  */
 public class UtilisateurController {
     private static final Logger LOGGER = Logger.getLogger(UtilisateurController.class.getName());
 
-    // FXML components for login
+    // === Composants FXML : Champs de la vue ===
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private ComboBox<String> roleComboBox;
     @FXML private Label statusLabel;
     
+    // === Attributs principaux ===
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
     private Stage currentStage;
     
+    // === Constructeur et initialisation ===
     /**
-     * Set the current stage for navigation purposes
+     * Définit la fenêtre courante pour la navigation.
      */
     public void setCurrentStage(Stage stage) {
         this.currentStage = stage;
     }
 
     @FXML
+    /**
+     * Initialise la vue : configure le ComboBox et vide le statut.
+     */
     public void initialize() {
         if (roleComboBox != null) {
             roleComboBox.getItems().addAll("Étudiant", "Professeur");
@@ -50,6 +58,10 @@ public class UtilisateurController {
         }
     }
 
+    // === Gestion des événements utilisateur ===
+    /**
+     * Traite la tentative de connexion de l'utilisateur.
+     */
     @FXML
     private void handleLogin() {
         String email = emailField.getText();
@@ -77,6 +89,9 @@ public class UtilisateurController {
         }
     }
     
+    /**
+     * Ouvre et gère le formulaire d'inscription.
+     */
     @FXML
     private void handleRegister() {
         try {
@@ -102,6 +117,9 @@ public class UtilisateurController {
         }
     }
     
+    /**
+     * Réinitialise le formulaire (action Retour).
+     */
     @FXML
     private void handleRetour() {
         // If there's a welcome screen to go back to, implement navigation here
@@ -117,7 +135,7 @@ public class UtilisateurController {
     }
     
     /**
-     * Display a status message
+     * Affiche un message de statut sur l'interface.
      */
     private void showStatus(String message, boolean isError) {
         if (statusLabel != null) {
@@ -127,7 +145,7 @@ public class UtilisateurController {
     }
     
     /**
-     * Opens the matiere selection screen
+     * Ouvre l'écran de sélection de matière après connexion.
      */
     private void openMatiereSelection(int userId, String role) {
         try {
@@ -154,6 +172,9 @@ public class UtilisateurController {
         }
     }
     
+    /**
+     * Traite la déconnexion et réaffiche l'écran de login.
+     */
     @FXML
     private void handleLogout() {
         try {
@@ -176,6 +197,9 @@ public class UtilisateurController {
         }
     }
     
+    /**
+     * Ferme la fenêtre courante.
+     */
     private void closeCurrentStage() {
         if (currentStage != null) {
             currentStage.close();
@@ -188,7 +212,7 @@ public class UtilisateurController {
     }
     
     /**
-     * Display an alert dialog
+     * Affiche une boîte de dialogue d'alerte.
      */
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);

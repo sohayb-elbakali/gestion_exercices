@@ -25,8 +25,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Unified controller for subject (matiere) selection and management
- * This controller consolidates functionality from MatiereManagementController
+ * Contrôleur pour la gestion des matières :
+ *  • Affichage de la liste des matières
+ *  • Création, modification et suppression de matières
  */
 public class MatiereController {
     private static final Logger LOGGER = Logger.getLogger(MatiereController.class.getName());
@@ -70,6 +71,9 @@ public class MatiereController {
     }
 
     @FXML
+    /**
+     * Configure la TableView et charge les matières depuis la base de données.
+     */
     public void initialize() {
         // Initialize the ComboBox if we're in selection view
         if (matiereComboBox != null) {
