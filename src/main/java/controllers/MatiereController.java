@@ -32,12 +32,12 @@ import java.util.logging.Logger;
 public class MatiereController {
     private static final Logger LOGGER = Logger.getLogger(MatiereController.class.getName());
     
-    // FXML components for matiere selection view
+    // Composants FXML pour la vue de sélection de matière
     @FXML private ComboBox<Matiere> matiereComboBox;
     @FXML private Button mySolutionsButton;
     @FXML private Button manageUsersButton;
     
-    // FXML components for matiere management view
+    // Composants FXML pour la vue de gestion des matières
     @FXML private TableView<Matiere> matiereTable;
     @FXML private TableColumn<Matiere, Integer> idColumn;
     @FXML private TableColumn<Matiere, String> nomColumn;
@@ -50,7 +50,7 @@ public class MatiereController {
     private final ObservableList<Matiere> matiereList = FXCollections.observableArrayList();
     
     /**
-     * Sets the user ID for the current logged-in user
+     * Définit l'identifiant de l'utilisateur actuellement connecté.
      */
     public void setUserId(int userId) {
         this.userId = userId;
@@ -58,13 +58,13 @@ public class MatiereController {
     }
 
     /**
-     * Sets the user role for the current logged-in user and updates UI accordingly
+     * Définit le rôle de l'utilisateur et met à jour l'interface.
      */
     public void setUserRole(String userRole) {
         this.userRole = userRole;
         LOGGER.info("User role set to: " + userRole);
         
-        // Try to update UI if JavaFX components are ready
+        // Mise à jour de l'UI si le ComboBox est déjà initialisé
         if (matiereComboBox != null && matiereComboBox.getScene() != null) {
             updateUIForRole();
         }
@@ -72,14 +72,15 @@ public class MatiereController {
 
     @FXML
     /**
-     * Configure la TableView et charge les matières depuis la base de données.
+     * Initialise le contrôleur.
+     * Configure le ComboBox pour la sélection et le TableView pour la gestion.
      */
     public void initialize() {
-        // Initialize the ComboBox if we're in selection view
+        // Initialisation de la vue de sélection de matière
         if (matiereComboBox != null) {
             loadMatieres();
             
-            // Add a listener to update UI when the scene is available
+            // Met à jour l'IU une fois la scène disponible
             matiereComboBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
                 if (newScene != null && userRole != null) {
                     updateUIForRole();
@@ -87,7 +88,7 @@ public class MatiereController {
             });
         }
         
-        // Initialize the TableView if we're in management view
+        // Initialisation de la vue de gestion des matières
         if (matiereTable != null) {
             configureTableView();
             loadAllMatieres();
@@ -95,12 +96,13 @@ public class MatiereController {
     }
     
     /**
-     * Configure UI elements based on user role
+     * Met à jour l'interface en fonction du rôle de l'utilisateur.
+     * Les étudiants voient moins d'options qu'un professeur.
      */
     public void updateUIForRole() {
         if (userRole != null) {
             if (!"Professeur".equals(userRole)) {
-                // Student role - hide certain buttons
+                // Pour les étudiants : cacher certains boutons
                 if (mySolutionsButton != null) {
                     mySolutionsButton.setVisible(false);
                     mySolutionsButton.setManaged(false);
@@ -113,7 +115,7 @@ public class MatiereController {
                     LOGGER.info("Hiding 'Gérer les utilisateurs' button for students");
                 }
             } else {
-                // Professor role - ensure buttons are visible
+                // Pour les professeurs : affichage complet des boutons
                 if (mySolutionsButton != null) {
                     mySolutionsButton.setVisible(true);
                     mySolutionsButton.setManaged(true);
@@ -128,7 +130,7 @@ public class MatiereController {
     }
     
     /**
-     * Loads the available subjects from the database into the ComboBox
+     * Charge les matières depuis la base de données dans le ComboBox.
      */
     private void loadMatieres() {
         try {
@@ -144,19 +146,21 @@ public class MatiereController {
     }
     
     /**
-     * Configure the table view columns and cell factories for management view
+     * Configure le TableView pour la gestion des matières.
+     * Définit les colonnes et ajoute les boutons d'action.
      */
     private void configureTableView() {
-        // Set up column cell value factories
+        // Configuration de la colonne ID
         if (idColumn != null) {
             idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         }
         
+        // Configuration de la colonne nom
         if (nomColumn != null) {
             nomColumn.setCellValueFactory(new PropertyValueFactory<>("nom"));
         }
         
-        // Add action buttons for each row
+        // Ajout des boutons d'actions pour chaque ligne (Exercices, Modifier, Supprimer)
         if (actionsColumn != null) {
             actionsColumn.setCellFactory(param -> {
                 return new TableCell<>() {
@@ -165,12 +169,12 @@ public class MatiereController {
                     private final Button deleteButton = new Button("Supprimer");
                     
                     {
-                        // Set up button actions
+                        // Définition des actions au clic
                         viewButton.setOnAction(event -> viewExercices(getTableRow().getItem()));
                         editButton.setOnAction(event -> openMatiereEditor(getTableRow().getItem()));
                         deleteButton.setOnAction(event -> confirmAndDeleteMatiere(getTableRow().getItem()));
                         
-                        // Apply CSS classes
+                        // Application des classes CSS
                         viewButton.getStyleClass().add("button-blue");
                         editButton.getStyleClass().add("button-yellow");
                         deleteButton.getStyleClass().add("button-red");
@@ -192,12 +196,12 @@ public class MatiereController {
                         }
                         
                         HBox buttonBox = new HBox(5);
-                        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
+                        buttonBox.setAlignment(Pos.CENTER);
                         
-                        // Always show view button
+                        // Toujours afficher le bouton pour voir les exercices
                         buttonBox.getChildren().add(viewButton);
                         
-                        // Only professors can edit/delete subjects
+                        // Seuls les professeurs peuvent modifier ou supprimer les matières
                         if ("Professeur".equals(userRole)) {
                             buttonBox.getChildren().addAll(editButton, deleteButton);
                         }
@@ -208,14 +212,14 @@ public class MatiereController {
             });
         }
         
-        // Set items if we have a table
+        // Affectation de la liste des matières au TableView
         if (matiereTable != null) {
             matiereTable.setItems(matiereList);
         }
     }
     
     /**
-     * Load all matieres from the database for the management view
+     * Charge toutes les matières depuis la base de données pour la vue de gestion.
      */
     private void loadAllMatieres() {
         matiereList.clear();
@@ -223,7 +227,7 @@ public class MatiereController {
     }
     
     /**
-     * Handles matiere selection and opens the exercise list for that subject
+     * Gère la sélection d'une matière et ouvre la liste des exercices correspondants.
      */
     @FXML
     private void selectMatiere() {
@@ -231,7 +235,7 @@ public class MatiereController {
     }
     
     /**
-     * Open the selected matiere and close other windows
+     * Ouvre la matière sélectionnée et ferme les autres fenêtres.
      */
     private void openSelectedMatiere() {
         Matiere matiere = matiereComboBox.getValue();
@@ -243,7 +247,7 @@ public class MatiereController {
         }
         
         try {
-            // Get the current stage before we create a new one
+            // Récupérer la fenêtre actuelle avant d'en créer une nouvelle
             Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
             
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exercice_view.fxml"));
@@ -257,10 +261,10 @@ public class MatiereController {
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
-            // Close all other windows except the current one
+            // Ferme toutes les autres fenêtres sauf celle en cours
             closeAllOtherWindows(currentStage);
             
-            // Change the scene of the current stage instead of creating a new one
+            // Change la scène de la fenêtre actuelle
             currentStage.setTitle("Exercices - " + matiere.getNom());
             currentStage.setScene(scene);
             IconHelper.setStageIcon(currentStage);
@@ -272,7 +276,7 @@ public class MatiereController {
     }
     
     /**
-     * View exercices for a matiere from the management view
+     * Affiche les exercices pour une matière depuis la vue de gestion.
      */
     private void viewExercices(Matiere matiere) {
         try {
@@ -301,15 +305,15 @@ public class MatiereController {
     }
     
     /**
-     * Opens the "My Exercises" view
+     * Ouvre la vue "Mes Exercices".
+     * Change la scène de la fenêtre actuelle et ferme les autres fenêtres.
      */
     @FXML
     private void showMyExercises() {
         try {
-            // Get the current stage
             Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
             
-            // Close all other windows
+            // Ferme toutes les autres fenêtres
             closeAllOtherWindows(currentStage);
             
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exercice_view.fxml"));
@@ -323,7 +327,7 @@ public class MatiereController {
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
-            // Change the scene of the current stage instead of creating a new one
+            // Modification de la scène de la fenêtre actuelle
             currentStage.setTitle("Mes Exercices");
             currentStage.setScene(scene);
             IconHelper.setStageIcon(currentStage);
@@ -335,11 +339,10 @@ public class MatiereController {
     }
     
     /**
-     * Opens the "My Solutions" view
+     * Ouvre la vue "Mes Solutions" (accessible uniquement aux professeurs).
      */
     @FXML
     private void showMySolutions() {
-        // Only professors can access solutions
         if (!"Professeur".equals(userRole)) {
             showAlert(Alert.AlertType.WARNING, "Accès refusé", "Permission insuffisante", 
                      "Seuls les professeurs peuvent accéder aux solutions.");
@@ -347,10 +350,7 @@ public class MatiereController {
         }
         
         try {
-            // Get the current stage
             Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
-            
-            // Close all other windows
             closeAllOtherWindows(currentStage);
             
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/solution_view.fxml"));
@@ -364,7 +364,6 @@ public class MatiereController {
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
-            // Change the scene of the current stage instead of creating a new one
             currentStage.setTitle("Mes Solutions");
             currentStage.setScene(scene);
             IconHelper.setStageIcon(currentStage);
@@ -376,17 +375,16 @@ public class MatiereController {
     }
     
     /**
-     * Open the editor for adding or editing a matiere
-     * Now creates a dialog directly instead of loading a separate FXML
+     * Ouvre l'éditeur pour ajouter ou modifier une matière.
+     * Crée une boîte de dialogue directement via JavaFX plutôt que d'utiliser un FXML séparé.
      */
     private void openMatiereEditor(Matiere matiere) {
         try {
-            // Create dialog window
             Stage dialog = new Stage();
             dialog.initModality(Modality.APPLICATION_MODAL);
             dialog.setTitle(matiere != null ? "Modifier la matière" : "Ajouter une matière");
             
-            // Create editor form
+            // Création du formulaire d'édition
             VBox dialogRoot = new VBox(15);
             dialogRoot.setPadding(new Insets(20));
             dialogRoot.setAlignment(Pos.CENTER);
@@ -423,9 +421,9 @@ public class MatiereController {
             
             dialogRoot.getChildren().addAll(titleLabel, formGrid, editorStatusLabel, buttonBox);
             
-            // Add event handlers
             final boolean isEditing = matiere != null;
             
+            // Gestion de l'enregistrement de la matière
             saveButton.setOnAction(event -> {
                 if (nomField.getText().trim().isEmpty()) {
                     editorStatusLabel.setText("Le nom de la matière est obligatoire.");
@@ -435,7 +433,7 @@ public class MatiereController {
                 
                 String nom = nomField.getText().trim();
                 
-                // Check for existing matiere with same name
+                // Vérifie si une matière avec le même nom existe déjà
                 if ((!isEditing || (isEditing && !matiere.getNom().equals(nom))) && 
                      matiereDAO.matiereExists(nom)) {
                     editorStatusLabel.setText("Une matière avec ce nom existe déjà.");
@@ -447,14 +445,14 @@ public class MatiereController {
                     boolean success;
                     
                     if (isEditing) {
-                        // Update existing matiere
+                        // Mise à jour d'une matière existante
                         matiere.setNom(nom);
                         success = matiereDAO.updateMatiere(matiere);
                         if (success) {
                             dialog.setUserData(matiere);
                         }
                     } else {
-                        // Add new matiere
+                        // Ajout d'une nouvelle matière
                         Matiere newMatiere = new Matiere(nom);
                         Matiere createdMatiere = matiereDAO.addMatiereAndReturn(newMatiere);
                         
@@ -473,7 +471,7 @@ public class MatiereController {
                         editorStatusLabel.setText(isEditing ? "Matière modifiée avec succès!" : "Matière ajoutée avec succès!");
                         editorStatusLabel.setStyle("-fx-text-fill: green;");
                         
-                        // Close dialog after short delay
+                        // Fermeture du dialogue après un court délai
                         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
                         pause.setOnFinished(e -> dialog.close());
                         pause.play();
@@ -490,7 +488,7 @@ public class MatiereController {
             
             cancelButton.setOnAction(event -> dialog.close());
             
-            // Show dialog
+            // Affichage de la boîte de dialogue
             Scene dialogScene = new Scene(dialogRoot);
             dialogScene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             dialog.setScene(dialogScene);
@@ -498,11 +496,11 @@ public class MatiereController {
             dialog.setMinHeight(250);
             IconHelper.setStageIcon(dialog);
             
-            // Add listener to update the table when the window is closed
+            // Mise à jour de la liste des matières à la fermeture du dialogue
             dialog.setOnHidden(event -> {
                 if (dialog.getUserData() instanceof Matiere || Boolean.TRUE.equals(dialog.getUserData())) {
                     loadAllMatieres();
-                    loadMatieres(); // Also refresh combo box if present
+                    loadMatieres(); // Rafraîchit aussi le ComboBox si présent
                 }
             });
             
@@ -515,7 +513,7 @@ public class MatiereController {
     }
     
     /**
-     * Confirm and delete a matiere
+     * Demande confirmation avant de supprimer une matière.
      */
     private void confirmAndDeleteMatiere(Matiere matiere) {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
@@ -528,11 +526,9 @@ public class MatiereController {
             boolean success = matiereDAO.deleteMatiere(matiere.getId());
             
             if (success) {
-                // Remove the matiere from the list
+                // Retirer la matière de la liste et rafraîchir le ComboBox
                 matiereList.remove(matiere);
                 showStatus("Matière supprimée avec succès.", false);
-                
-                // Also refresh the combo box if present
                 loadMatieres();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Suppression impossible", 
@@ -542,7 +538,7 @@ public class MatiereController {
     }
     
     /**
-     * Opens the user management screen (only for admins/professors)
+     * Ouvre l'écran de gestion des utilisateurs (exclusif aux professeurs).
      */
     @FXML
     private void manageUsers() {
@@ -575,7 +571,7 @@ public class MatiereController {
     }
     
     /**
-     * Opens the matiere management screen
+     * Ouvre l'écran de gestion des matières.
      */
     @FXML
     private void manageMatieres() {
@@ -583,7 +579,6 @@ public class MatiereController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/matiere_management.fxml"));
             Parent root = loader.load();
             
-            // This function will be removed in future as we're unifying controllers
             MatiereController controller = loader.getController();
             controller.setUserId(userId);
             controller.setUserRole(userRole);
@@ -606,7 +601,7 @@ public class MatiereController {
     }
     
     /**
-     * Open form to add a new matiere from management view
+     * Ouvre le formulaire d'ajout d'une nouvelle matière depuis la vue de gestion.
      */
     @FXML
     private void openAddMatiereForm() {
@@ -614,7 +609,7 @@ public class MatiereController {
     }
     
     /**
-     * Return to the main menu from management view
+     * Retourne au menu principal depuis la vue de gestion.
      */
     @FXML
     private void handleBack() {
@@ -643,13 +638,13 @@ public class MatiereController {
         }
     }
     
+    /**
+     * Gère la déconnexion et retourne à l'écran de connexion.
+     */
     @FXML
     private void handleLogout() {
         try {
-            // Get the current stage
             Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
-            
-            // Close all other windows
             closeAllOtherWindows(currentStage);
             
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
@@ -672,6 +667,9 @@ public class MatiereController {
         }
     }
     
+    /**
+     * Ferme la fenêtre actuelle.
+     */
     private void closeCurrentStage() {
         if (matiereComboBox != null) {
             Stage stage = (Stage) matiereComboBox.getScene().getWindow();
@@ -687,7 +685,7 @@ public class MatiereController {
     }
     
     /**
-     * Display an alert dialog
+     * Affiche une boîte de dialogue d'alerte.
      */
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);
@@ -699,7 +697,7 @@ public class MatiereController {
     }
     
     /**
-     * Show a status message 
+     * Affiche un message de statut dans l'interface.
      */
     private void showStatus(String message, boolean isError) {
         if (statusLabel != null) {
@@ -709,7 +707,7 @@ public class MatiereController {
     }
     
     /**
-     * Refresh the matieres list
+     * Rafraîchit la liste des matières.
      */
     @FXML
     private void refreshMatieres() {
@@ -718,7 +716,7 @@ public class MatiereController {
     }
     
     /**
-     * Alternative method name for choix_matiere.fxml
+     * Méthode alternative pour ouvrir "Mes Exercices" depuis choix_matiere.fxml.
      */
     @FXML
     private void ouvrirMesExercices() {
@@ -726,7 +724,7 @@ public class MatiereController {
     }
     
     /**
-     * Alternative method name for choix_matiere.fxml
+     * Méthode alternative pour ouvrir "Mes Solutions" depuis choix_matiere.fxml.
      */
     @FXML
     private void ouvrirMesSolutions() {
@@ -734,7 +732,7 @@ public class MatiereController {
     }
     
     /**
-     * Return to the login screen
+     * Retourne à l'écran de connexion.
      */
     @FXML
     private void handleRetour() {
@@ -742,20 +740,17 @@ public class MatiereController {
     }
     
     /**
-     * Close all other open windows except the specified one
+     * Ferme toutes les fenêtres ouvertes, à l'exception de celle spécifiée.
      */
     private void closeAllOtherWindows(Stage exceptStage) {
-        // Create a list to hold stages to close to avoid ConcurrentModificationException
         java.util.List<Stage> stagesToClose = new java.util.ArrayList<>();
         
-        // Find all open windows
         for (javafx.stage.Window window : javafx.stage.Window.getWindows()) {
             if (window instanceof Stage && window.isShowing() && window != exceptStage) {
                 stagesToClose.add((Stage) window);
             }
         }
         
-        // Close each stage
         for (Stage stage : stagesToClose) {
             LOGGER.info("Closing window: " + stage.getTitle());
             stage.close();

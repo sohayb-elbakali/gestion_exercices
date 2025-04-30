@@ -11,13 +11,13 @@ import java.util.logging.Logger;
 
 /**
  * Contrôleur pour le formulaire d'inscription des utilisateurs :
- *  • Validation des champs
+ *  • Validation des champs du formulaire
  *  • Création d'un nouvel Utilisateur via UtilisateurDAO
  */
 public class RegisterController {
     private static final Logger LOGGER = Logger.getLogger(RegisterController.class.getName());
     
-    // === Composants FXML : Champs du formulaire ===
+    // === Composants FXML : Champs du formulaire d'inscription ===
     @FXML private TextField nomField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
@@ -25,7 +25,7 @@ public class RegisterController {
     @FXML private ComboBox<String> roleComboBox;
     @FXML private Label statusLabel;
     
-    // === Attributs principaux ===
+    // === Instance du DAO pour accéder aux données des utilisateurs ===
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
     
     // === Initialisation de la vue ===
@@ -34,42 +34,48 @@ public class RegisterController {
      * Initialise le ComboBox des rôles et réinitialise le label de statut.
      */
     public void initialize() {
+        // Remplit le ComboBox des rôles disponibles
         roleComboBox.getItems().addAll("Étudiant", "Professeur");
+        // Définit la valeur par défaut
         roleComboBox.setValue("Étudiant");
+        // Réinitialise le message de status
         statusLabel.setText("");
     }
     
     // === Gestion des événements utilisateur ===
     @FXML
     /**
-     * Valide les champs et traite l'inscription de l'utilisateur.
+     * Validation des champs et traitement de l'inscription.
+     * Vérifie que le formulaire est bien rempli, que l'email n'est pas déjà utilisé,
+     * et crée un nouvel utilisateur en appelant le DAO.
      */
     private void handleRegister() {
-        // Validate form
+        // Validation du formulaire d'inscription
         if (!validateForm()) {
             return;
         }
         
+        // Récupération des valeurs saisies
         String nom = nomField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
         String role = roleComboBox.getValue();
         
         try {
-            // Check if user already exists
+            // Vérifie si un utilisateur avec cet email existe déjà
             if (utilisateurDAO.userExists(email)) {
                 showStatus("Un utilisateur avec cet email existe déjà.", true);
                 return;
             }
             
-            // Create and save new user
+            // Création et sauvegarde du nouvel utilisateur
             Utilisateur newUser = new Utilisateur(email, password, role);
             newUser.setNom(nom);
             
             boolean success = utilisateurDAO.addUtilisateur(newUser);
             
             if (success) {
-                // Mark successful registration
+                // Si l'inscription est réussie, marque le succès et ferme la fenêtre
                 getStage().setUserData(Boolean.TRUE);
                 getStage().close();
             } else {
@@ -92,6 +98,7 @@ public class RegisterController {
     // === Méthodes utilitaires ===
     /**
      * Vérifie la validité des saisies du formulaire et affiche les erreurs le cas échéant.
+     * @return true si le formulaire est correctement rempli, false sinon
      */
     private boolean validateForm() {
         if (nomField.getText().trim().isEmpty()) {
@@ -134,6 +141,8 @@ public class RegisterController {
     
     /**
      * Affiche un message de succès ou d'erreur sous le formulaire.
+     * @param message Le message à afficher.
+     * @param isError true si le message est une erreur (texte en rouge), false en cas de succès (texte en vert).
      */
     private void showStatus(String message, boolean isError) {
         statusLabel.setText(message);
@@ -141,9 +150,11 @@ public class RegisterController {
     }
     
     /**
-     * Récupère la stage actuelle pour fermer la fenêtre de dialogue.
+     * Récupère la Stage actuelle en se basant sur le champ emailField.
+     * Permet de fermer la fenêtre de dialogue.
+     * @return La Scene parent sous forme de Stage.
      */
     private Stage getStage() {
         return (Stage) emailField.getScene().getWindow();
     }
-} 
+}

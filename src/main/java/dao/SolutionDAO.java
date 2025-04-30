@@ -8,15 +8,28 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO (Data Access Object) de la solution.
+ * Fournit des méthodes pour accéder aux données de la table "solution" de la base de données.
+ */
 public class SolutionDAO {
+
+    /**
+     * Récupère la liste des solutions associées à un exercice donné.
+     *
+     * @param exerciceId l'identifiant de l'exercice
+     * @return une liste de solutions
+     */
     public List<Solution> getSolutionsByExercice(int exerciceId) {
         List<Solution> solutions = new ArrayList<>();
         String sql = "SELECT s.* FROM solution s WHERE s.exercice_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+            // Définition du paramètre dans la requête
             stmt.setInt(1, exerciceId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
+                // Création d'une instance de Solution avec les valeurs récupérées
                 Solution solution = new Solution(
                         rs.getInt("id"),
                         rs.getString("contenu"),
@@ -25,11 +38,12 @@ public class SolutionDAO {
                         rs.getInt("auteur_id")
                 );
                 
-                // Get author name separately to be more resilient
+                // Récupération du nom de l'auteur de manière indépendante pour plus de robustesse
                 try {
                     int auteurId = rs.getInt("auteur_id");
                     solution.setAuteurNom(getUserName(auteurId));
                 } catch (Exception e) {
+                    // En cas d'erreur, on définit un nom par défaut
                     solution.setAuteurNom("Utilisateur " + rs.getInt("auteur_id"));
                 }
                 
@@ -41,7 +55,12 @@ public class SolutionDAO {
         return solutions;
     }
 
-    // Helper method to get user name
+    /**
+     * Méthode utilitaire pour récupérer le nom d'un utilisateur à partir de son ID.
+     *
+     * @param userId l'identifiant de l'utilisateur
+     * @return le nom de l'utilisateur ou un nom par défaut si non trouvé
+     */
     private String getUserName(int userId) {
         String sql = "SELECT nom FROM utilisateur WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -53,11 +72,17 @@ public class SolutionDAO {
                 return (nom != null && !nom.isEmpty()) ? nom : "Utilisateur " + userId;
             }
         } catch (SQLException e) {
-            // If there's an error, just return a default name
+            // En cas d'erreur, retourne un nom par défaut
         }
         return "Utilisateur " + userId;
     }
 
+    /**
+     * Ajoute une nouvelle solution dans la base de données.
+     *
+     * @param solution la solution à ajouter
+     * @return true si l'ajout a réussi, false sinon
+     */
     public boolean addSolution(Solution solution) {
         String sql = "INSERT INTO solution (contenu, date_creation, exercice_id, auteur_id) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -74,6 +99,12 @@ public class SolutionDAO {
         }
     }
 
+    /**
+     * Met à jour une solution existante dans la base de données.
+     *
+     * @param solution la solution à mettre à jour
+     * @return true si la mise à jour a réussi, false sinon
+     */
     public boolean updateSolution(Solution solution) {
         String sql = "UPDATE solution SET contenu = ?, date_creation = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -89,6 +120,12 @@ public class SolutionDAO {
         }
     }
 
+    /**
+     * Supprime une solution à partir de son identifiant.
+     *
+     * @param id l'identifiant de la solution à supprimer
+     * @return true si la suppression a réussi, false sinon
+     */
     public boolean deleteSolution(int id) {
         String sql = "DELETE FROM solution WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -102,6 +139,12 @@ public class SolutionDAO {
         }
     }
 
+    /**
+     * Récupère une solution par son identifiant.
+     *
+     * @param id l'identifiant de la solution
+     * @return la solution si trouvée, sinon null
+     */
     public Solution getSolutionById(int id) {
         String sql = "SELECT s.* FROM solution s WHERE s.id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -109,6 +152,7 @@ public class SolutionDAO {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
+                // Création de l'objet Solution avec les champs extraits de la base
                 Solution solution = new Solution(
                         rs.getInt("id"),
                         rs.getString("contenu"),
@@ -117,7 +161,7 @@ public class SolutionDAO {
                         rs.getInt("auteur_id")
                 );
                 
-                // Get author name separately
+                // Récupération du nom de l'auteur via la méthode utilitaire
                 try {
                     int auteurId = rs.getInt("auteur_id");
                     solution.setAuteurNom(getUserName(auteurId));
@@ -133,6 +177,12 @@ public class SolutionDAO {
         return null;
     }
 
+    /**
+     * Récupère la liste des solutions dont l'exercice est créé par un utilisateur donné.
+     *
+     * @param createurId l'identifiant du créateur de l'exercice
+     * @return une liste de solutions
+     */
     public List<Solution> getSolutionsByCreateur(int createurId) {
         List<Solution> solutions = new ArrayList<>();
         String sql = "SELECT s.* FROM solution s " +
@@ -145,6 +195,7 @@ public class SolutionDAO {
             try {
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
+                    // Instanciation de la solution à partir des résultats
                     Solution solution = new Solution(
                             rs.getInt("id"),
                             rs.getString("contenu"),
@@ -153,7 +204,7 @@ public class SolutionDAO {
                             rs.getInt("auteur_id")
                     );
                     
-                    // Get author name separately
+                    // Récupération du nom de l'auteur
                     try {
                         int auteurId = rs.getInt("auteur_id");
                         solution.setAuteurNom(getUserName(auteurId));
@@ -172,6 +223,12 @@ public class SolutionDAO {
         return solutions;
     }
     
+    /**
+     * Récupère la liste des solutions soumises par un auteur spécifique.
+     *
+     * @param auteurId l'identifiant de l'auteur
+     * @return une liste de solutions
+     */
     public List<Solution> getSolutionsByAuteur(int auteurId) {
         List<Solution> solutions = new ArrayList<>();
         String sql = "SELECT s.* FROM solution s WHERE s.auteur_id = ?";
@@ -182,6 +239,7 @@ public class SolutionDAO {
             try {
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
+                    // Création d'une solution avec les données de la requête
                     Solution solution = new Solution(
                             rs.getInt("id"),
                             rs.getString("contenu"),
@@ -190,7 +248,7 @@ public class SolutionDAO {
                             rs.getInt("auteur_id")
                     );
                     
-                    // Get author name separately
+                    // On utilise l'ID de l'auteur pour obtenir son nom
                     solution.setAuteurNom(getUserName(auteurId));
                     
                     solutions.add(solution);
@@ -204,6 +262,12 @@ public class SolutionDAO {
         return solutions;
     }
 
+    /**
+     * Ajoute une solution dans la base de données et renvoie l'objet solution avec son ID attribué.
+     *
+     * @param solution la solution à ajouter
+     * @return la solution créée avec son identifiant ou null si l'opération échoue
+     */
     public Solution addSolutionAndReturn(Solution solution) {
         String insertSql = "INSERT INTO solution (contenu, date_creation, exercice_id, auteur_id) VALUES (?, ?, ?, ?)";
         String getLastIdSql = "SELECT LAST_INSERT_ID()";
@@ -211,8 +275,9 @@ public class SolutionDAO {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Démarrage de la transaction
             
+            // Exécution de l'insertion
             try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                 insertStmt.setString(1, solution.getContenu());
                 insertStmt.setTimestamp(2, Timestamp.valueOf(solution.getDateCreation()));
@@ -222,6 +287,7 @@ public class SolutionDAO {
             }
             
             int lastInsertId = 0;
+            // Récupération de l'identifiant généré pour la solution insérée
             try (PreparedStatement idStmt = conn.prepareStatement(getLastIdSql);
                  ResultSet rs = idStmt.executeQuery()) {
                 if (rs.next()) {
@@ -229,7 +295,7 @@ public class SolutionDAO {
                 }
             }
             
-            conn.commit();
+            conn.commit(); // Validation de la transaction
             
             if (lastInsertId > 0) {
                 solution.setId(lastInsertId);
@@ -240,7 +306,7 @@ public class SolutionDAO {
         } catch (SQLException e) {
             try {
                 if (conn != null) {
-                    conn.rollback();
+                    conn.rollback(); // Annulation en cas d'erreur
                 }
             } catch (SQLException rollbackEx) {
                 rollbackEx.printStackTrace();
@@ -250,7 +316,7 @@ public class SolutionDAO {
         } finally {
             try {
                 if (conn != null) {
-                    conn.setAutoCommit(true);
+                    conn.setAutoCommit(true); // Rétablissement du mode autocommit
                     conn.close();
                 }
             } catch (SQLException closeEx) {
@@ -258,4 +324,4 @@ public class SolutionDAO {
             }
         }
     }
-} 
+}

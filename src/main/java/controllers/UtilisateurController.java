@@ -50,11 +50,11 @@ public class UtilisateurController {
     public void initialize() {
         if (roleComboBox != null) {
             roleComboBox.getItems().addAll("Étudiant", "Professeur");
-            roleComboBox.setValue("Étudiant"); // Default selection
+            roleComboBox.setValue("Étudiant"); // Sélection par défaut
         }
         
         if (statusLabel != null) {
-            statusLabel.setText(""); // Clear status message
+            statusLabel.setText(""); // Réinitialise le message de statut
         }
     }
 
@@ -68,7 +68,7 @@ public class UtilisateurController {
         String password = passwordField.getText();
         String role = roleComboBox.getValue();
 
-        // Basic validation
+        // Validation basique du formulaire
         if (email == null || email.isEmpty() || password == null || password.isEmpty() || role == null) {
             showStatus("Veuillez remplir tous les champs.", true);
             return;
@@ -107,7 +107,7 @@ public class UtilisateurController {
             IconHelper.setStageIcon(stage);
             stage.showAndWait();
             
-            // Show success message if registration was successful
+            // Affiche un message de succès si l'inscription s'est bien déroulée
             if (Boolean.TRUE.equals(stage.getUserData())) {
                 showStatus("Inscription réussie! Vous pouvez maintenant vous connecter.", false);
             }
@@ -122,8 +122,8 @@ public class UtilisateurController {
      */
     @FXML
     private void handleRetour() {
-        // If there's a welcome screen to go back to, implement navigation here
-        // For now, we'll just clear the form
+        // S'il existe une page d'accueil à laquelle revenir, la navigation sera implémentée ici
+        // Pour l'instant, nous effaçons uniquement le formulaire
         clearForm();
     }
     
@@ -222,4 +222,4 @@ public class UtilisateurController {
         IconHelper.setDialogIcon(alert);
         alert.showAndWait();
     }
-} 
+}

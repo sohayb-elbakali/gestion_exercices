@@ -29,12 +29,16 @@ import java.util.logging.Logger;
 import java.util.ArrayList;
 
 /**
- * Controller for exercise management (viewing, adding, editing, and deleting)
+ * Contrôleur pour la gestion des exercices (affichage, ajout, modification et suppression).
+ * 
+ * Ce contrôleur gère la vue des exercices ainsi que le formulaire d'ajout et d'édition.
+ * La logique métier reste inchangée.
  */
 public class ExerciceController {
+    // Logger pour le suivi des événements importants
     private static final Logger LOGGER = Logger.getLogger(ExerciceController.class.getName());
 
-    // FXML components
+    // Composants FXML pour la gestion de la vue
     @FXML private TableView<Exercice> exerciceTable;
     @FXML private TableColumn<Exercice, String> titreColumn;
     @FXML private TableColumn<Exercice, String> matiereColumn;
@@ -43,42 +47,45 @@ public class ExerciceController {
     @FXML private Label titleLabel;
     @FXML private Button addExerciceButton;
     
-    // Form fields for add/edit
+    // Champs du formulaire pour l'ajout/modification d'exercice
     @FXML private TextField titreField;
     @FXML private TextArea descriptionField;
     @FXML private Button submitButton;
     
-    // State variables
+    // Variables d'état
     private int userId;
     private String userRole;
     private Matiere matiere;
     private Exercice currentExercice;
-    private boolean isEditing = false;
-    private boolean showUserExercisesOnly = false;
+    private boolean isEditing = false; // vrai si en mode édition
+    private boolean showUserExercisesOnly = false; // filtre pour afficher uniquement les exercices de l'utilisateur
     
+    // Accès aux données via le DAO et liste observable des exercices
     private final ExerciceDAO exerciceDAO = new ExerciceDAO();
     private final ObservableList<Exercice> exerciceList = FXCollections.observableArrayList();
     
     /**
-     * Initialize the controller
+     * Méthode d'initialisation du contrôleur.
+     * Elle configure la vue tableau et le formulaire selon le contexte.
      */
     @FXML
     public void initialize() {
-        // Initialize table if the controller is being used in table view mode
+        // Initialisation du TableView si présent
         if (exerciceTable != null) {
             configureTableView();
             exerciceTable.setItems(exerciceList);
             
-            // Add a listener to detect when an exercise is selected
+            // Ajout d'un listener pour détecter la sélection d'un exercice
             exerciceTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
                 if (newSelection != null) {
-                    LOGGER.info("Exercise selected: " + newSelection.getTitre());
+                    LOGGER.info("Exercice sélectionné : " + newSelection.getTitre());
                 }
             });
         }
         
-        // Initialize form fields if the controller is being used in form mode
+        // Initialisation du formulaire si le bouton de soumission est présent
         if (submitButton != null) {
+            // Change le texte du bouton selon le mode (édition ou ajout)
             submitButton.textProperty().bind(
                 javafx.beans.binding.Bindings.when(
                     javafx.beans.binding.Bindings.createBooleanBinding(() -> isEditing)
@@ -88,21 +95,23 @@ public class ExerciceController {
     }
     
     /**
-     * Configure the table view columns and cell factories
+     * Configure les colonnes du TableView et leurs usines à cellules.
+     * Important pour l'affichage correct des données.
      */
     private void configureTableView() {
         if (exerciceTable == null) return;
         
-        // Set up column cell value factories
+        // Configuration de la colonne titre
         if (titreColumn != null) {
             titreColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
         }
         
-        // Add the matiere column cell factory
+        // Configuration de la colonne matière
         if (matiereColumn != null) {
             matiereColumn.setCellValueFactory(new PropertyValueFactory<>("matiereNom"));
         }
         
+        // Configuration de la colonne date avec format personnalisé
         if (dateColumn != null) {
             dateColumn.setCellValueFactory(new PropertyValueFactory<>("dateCreation"));
             dateColumn.setCellFactory(column -> new TableCell<>() {
@@ -121,43 +130,45 @@ public class ExerciceController {
             });
         }
         
-        // Add action buttons for each row
+        // Ajout des boutons d'actions (Voir, Solutions, Modifier, Supprimer) pour chaque ligne
         if (actionsColumn != null) {
             setUpActionsColumn();
         }
     }
     
     /**
-     * Set up the actions column with buttons
+     * Configure la colonne d'actions avec les boutons d'interactions.
+     * Chaque bouton appelle une méthode spécifique selon l'action.
      */
     private void setUpActionsColumn() {
         actionsColumn.setCellFactory(param -> {
             return new TableCell<>() {
+                // Déclaration des boutons d'action avec leur style CSS associé
                 private final Button viewButton = new Button("Voir");
                 private final Button solutionsButton = new Button("Solutions");
                 private final Button editButton = new Button("Modifier");
                 private final Button deleteButton = new Button("Supprimer");
                 
                 {
-                    // Set up button actions
+                    // Association des actions au clic pour chaque bouton
                     viewButton.setOnAction(event -> showExerciseDetails(getTableRow().getItem()));
                     solutionsButton.setOnAction(event -> openSolutionsView(getTableRow().getItem()));
                     editButton.setOnAction(event -> openExerciseEditor(getTableRow().getItem()));
                     deleteButton.setOnAction(event -> confirmAndDeleteExercise(getTableRow().getItem()));
                     
-                    // Apply CSS classes
+                    // Application des classes CSS pour le style
                     viewButton.getStyleClass().add("button-blue");
                     solutionsButton.getStyleClass().add("button-green");
                     editButton.getStyleClass().add("button-yellow");
                     deleteButton.getStyleClass().add("button-red");
                     
-                    // Set minimum width for buttons
+                    // Définition de la largeur minimale pour les boutons
                     viewButton.setMinWidth(60);
                     solutionsButton.setMinWidth(80);
                     editButton.setMinWidth(70);
                     deleteButton.setMinWidth(80);
                     
-                    // Set max width for all buttons
+                    // Permet que tous les boutons aient une largeur maximum égale
                     viewButton.setMaxWidth(Double.MAX_VALUE);
                     solutionsButton.setMaxWidth(Double.MAX_VALUE);
                     editButton.setMaxWidth(Double.MAX_VALUE);
@@ -179,7 +190,7 @@ public class ExerciceController {
                         return;
                     }
                     
-                    // Create two separate HBoxes for better organization
+                    // Organisation des boutons dans des conteneurs HBox et VBox pour une meilleure disposition
                     HBox viewButtonsBox = new HBox(5);
                     viewButtonsBox.setAlignment(javafx.geometry.Pos.CENTER);
                     viewButtonsBox.getChildren().addAll(viewButton, solutionsButton);
@@ -187,16 +198,15 @@ public class ExerciceController {
                     HBox editButtonsBox = new HBox(5);
                     editButtonsBox.setAlignment(javafx.geometry.Pos.CENTER);
                     
-                    // Only creator can edit/delete their exercises
+                    // Seul le créateur ou un professeur peut modifier/supprimer un exercice
                     if (exercice.getCreateurId() == userId) {
                         editButtonsBox.getChildren().addAll(editButton, deleteButton);
                     }
-                    // Additionally, professors can edit/delete any exercise
                     else if ("Professeur".equals(userRole)) {
                         editButtonsBox.getChildren().addAll(editButton, deleteButton);
                     }
                     
-                    // Combine both HBoxes in a VBox for vertical arrangement
+                    // Regroupement vertical des boutons pour obtenir une organisation claire
                     javafx.scene.layout.VBox buttonContainer = new javafx.scene.layout.VBox(5);
                     buttonContainer.setAlignment(javafx.geometry.Pos.CENTER);
                     buttonContainer.getChildren().add(viewButtonsBox);
@@ -213,7 +223,7 @@ public class ExerciceController {
     }
     
     /**
-     * Set the user ID
+     * Définit l'ID de l'utilisateur et charge les exercices correspondants.
      */
     public void setUserId(int userId) {
         this.userId = userId;
@@ -221,25 +231,25 @@ public class ExerciceController {
     }
     
     /**
-     * Set the user role
+     * Définit le rôle de l'utilisateur et met à jour l'interface en conséquence.
      */
     public void setUserRole(String userRole) {
         this.userRole = userRole;
-        LOGGER.info("User role set to: " + userRole);
+        LOGGER.info("Rôle d'utilisateur défini sur : " + userRole);
         
-        // Update UI based on role
+        // Mise à jour de l'interface en fonction du rôle
         updateUIForUserRole();
     }
     
     /**
-     * Update UI components based on user role
+     * Met à jour les composants de l'interface utilisateur en fonction du rôle.
      */
     private void updateUIForUserRole() {
         if (addExerciceButton != null) {
-            // Show the add button for both students and professors now
+            // Affiche le bouton d'ajout pour tous les rôles
             addExerciceButton.setVisible(true);
             
-            // Update any labels or tooltips to be role-specific
+            // Mise à jour du titre selon le rôle et l'affichage filtré
             if (titleLabel != null) {
                 if ("Etudiant".equals(userRole) && showUserExercisesOnly) {
                     titleLabel.setText("Mes Exercices");
@@ -251,7 +261,7 @@ public class ExerciceController {
     }
     
     /**
-     * Set the matière for filtering exercises
+     * Définit la matière utilisée pour filtrer les exercices.
      */
     public void setMatiere(Matiere matiere) {
         this.matiere = matiere;
@@ -259,7 +269,7 @@ public class ExerciceController {
     }
     
     /**
-     * Set whether to show only user's exercises
+     * Définit le filtre pour n'afficher que les exercices de l'utilisateur.
      */
     public void setShowUserExercisesOnly(boolean showUserExercisesOnly) {
         this.showUserExercisesOnly = showUserExercisesOnly;
@@ -268,7 +278,7 @@ public class ExerciceController {
     }
     
     /**
-     * Load exercises based on the current filter settings
+     * Charge les exercices selon les filtres actifs (créateur, matière, etc.).
      */
     private void loadExercises() {
         exerciceList.clear();
@@ -276,35 +286,35 @@ public class ExerciceController {
         try {
             List<Exercice> exercises;
             if (showUserExercisesOnly) {
-                // Show only user's exercises
+                // Récupération des exercices créés par l'utilisateur
                 exercises = exerciceDAO.getExercicesByCreateur(userId);
-                LOGGER.info("Loaded user's exercises: " + exercises.size());
+                LOGGER.info("Nombre d'exercices de l'utilisateur : " + exercises.size());
             } else if (matiere != null) {
-                // Show exercises for a specific matière
+                // Récupération des exercices pour une matière spécifique
                 exercises = exerciceDAO.getExercicesByMatiere(matiere.getId());
-                LOGGER.info("Loaded exercises for matiere " + matiere.getId() + ": " + exercises.size());
+                LOGGER.info("Exercices de la matière " + matiere.getId() + " : " + exercises.size());
             } else {
-                // Default to loading all exercises
+                // Chargement de tous les exercices
                 exercises = exerciceDAO.getAllExercices();
-                LOGGER.info("Loaded all exercises: " + exercises.size());
+                LOGGER.info("Tous les exercices chargés : " + exercises.size());
             }
             
             exerciceList.addAll(exercises);
             
-            // Make sure to only set items if the table exists
+            // Mise à jour du TableView si disponible
             if (exerciceTable != null) {
                 exerciceTable.setItems(exerciceList);
                 exerciceTable.refresh();
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error loading exercises", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors du chargement des exercices", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de chargement", 
-                    "Impossible de charger les exercices: " + e.getMessage());
+                    "Impossible de charger les exercices : " + e.getMessage());
         }
     }
     
     /**
-     * Show exercise details in a dialog
+     * Affiche les détails d'un exercice dans une boite de dialogue.
      */
     private void showExerciseDetails(Exercice exercice) {
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -312,17 +322,19 @@ public class ExerciceController {
         
         DialogPane dialogPane = new DialogPane();
         
+        // Affichage du titre et de la matière avec formatage en gras
         Label titreLabel = new Label("Titre: " + exercice.getTitre());
         titreLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-        
         Label matiereLabel = new Label("Matière: " + exercice.getMatiereNom());
         matiereLabel.setStyle("-fx-font-weight: bold;");
         
+        // Zone de texte pour la description de l'exercice
         TextArea descriptionArea = new TextArea(exercice.getDescription());
         descriptionArea.setEditable(false);
         descriptionArea.setWrapText(true);
         descriptionArea.setPrefHeight(200);
         
+        // Organisation verticale du contenu de la boite de dialogue
         javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(10, 
                                           titreLabel,
                                           matiereLabel,
@@ -338,7 +350,8 @@ public class ExerciceController {
     }
     
     /**
-     * Open the exercise editor for a new or existing exercise
+     * Ouvre l'éditeur d'exercice pour l'ajout ou la modification.
+     * Crée une nouvelle fenêtre modale.
      */
     private void openExerciseEditor(Exercice exercice) {
         try {
@@ -350,12 +363,11 @@ public class ExerciceController {
             controller.setUserRole(userRole);
             
             if (exercice != null) {
-                // Editing existing exercise
+                // Edition d'un exercice existant
                 controller.setupForEditing(exercice);
             } else {
-                // Adding new exercise
-                // Handle the case where matiere is null (in "My Exercises" view)
-                int matiereId = (matiere != null) ? matiere.getId() : 1; // Default to matiere ID 1 if null
+                // Ajout d'un nouvel exercice, en utilisant l'identifiant de matière courant ou par défaut
+                int matiereId = (matiere != null) ? matiere.getId() : 1; // Matière par défaut = ID 1
                 controller.setupForAdding(matiereId);
             }
             
@@ -364,41 +376,34 @@ public class ExerciceController {
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
             
-            // Add a listener to refresh the list when the window is closed
+            // Rafraîchit la liste des exercices lors de la fermeture de la fenêtre
             stage.setOnHidden(event -> {
                 if (stage.getUserData() instanceof Exercice) {
-                    // If a new exercise was created, add it directly to the list
                     Exercice newExercice = (Exercice) stage.getUserData();
                     exerciceList.add(newExercice);
                     if (exerciceTable != null) {
                         exerciceTable.refresh();
                     }
                 } else if (Boolean.TRUE.equals(stage.getUserData())) {
-                    // Otherwise just reload all exercises
                     loadExercises();
                 }
             });
             
-            // Add window close handler for cleanup
-            stage.setOnCloseRequest(event -> {
-                // For modal dialogs, we don't need to show confirmation
-                // Just let it close normally
-            });
+            // Gestion de la fermeture de la fenêtre (aucune confirmation nécessaire pour les boites de dialogue modales)
+            stage.setOnCloseRequest(event -> { });
             
             IconHelper.setStageIcon(stage);
             stage.showAndWait();
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error opening exercise editor", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors de l'ouverture de l'éditeur d'exercice", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur d'ouverture", 
-                    "Impossible d'ouvrir l'éditeur d'exercice: " + e.getMessage());
+                    "Impossible d'ouvrir l'éditeur d'exercice : " + e.getMessage());
         }
     }
     
     /**
-     * Helper method to check if a window with a specific title already exists
-     * 
-     * @param windowTitle The title to check for
-     * @return The existing Stage if found, or null if not found
+     * Recherche une fenêtre existante ayant un titre donné.
+     * Utile pour éviter l'ouverture de fenêtres en double.
      */
     private Stage findExistingWindow(String windowTitle) {
         for (javafx.stage.Window window : javafx.stage.Window.getWindows()) {
@@ -413,7 +418,7 @@ public class ExerciceController {
     }
     
     /**
-     * Open "My Exercises" view for the current user
+     * Ouvre la vue "Mes Exercices" pour l'utilisateur courant.
      */
     @FXML
     private void openMyExercises() {
@@ -422,12 +427,11 @@ public class ExerciceController {
             Stage existingStage = findExistingWindow(windowTitle);
             
             if (existingStage != null) {
-                // Window found - bring it to front
+                // Si la fenêtre existe déjà, l'afficher au premier plan
                 existingStage.toFront();
-                LOGGER.info("Reusing existing 'Mes Exercices' window");
+                LOGGER.info("Réutilisation de la fenêtre existante 'Mes Exercices'");
             } else {
-                // No window exists, create a new one
-                LOGGER.info("Creating new 'Mes Exercices' window");
+                LOGGER.info("Création d'une nouvelle fenêtre 'Mes Exercices'");
                 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exercice_view.fxml"));
                 Parent root = loader.load();
@@ -447,14 +451,15 @@ public class ExerciceController {
                 stage.show();
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error opening my exercises", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors de l'ouverture de 'Mes Exercices'", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Navigation impossible", 
-                    "Impossible d'afficher mes exercices: " + e.getMessage());
+                    "Impossible d'afficher mes exercices : " + e.getMessage());
         }
     }
     
     /**
-     * Open the solutions view for an exercise
+     * Ouvre la vue des solutions pour un exercice donné.
+     * Vérifie d'abord si une fenêtre existe déjà pour cet exercice.
      */
     private void openSolutionsView(Exercice exercice) {
         try {
@@ -462,12 +467,10 @@ public class ExerciceController {
             Stage existingStage = findExistingWindow(windowTitle);
             
             if (existingStage != null) {
-                // Window found - bring it to front
                 existingStage.toFront();
-                LOGGER.info("Reusing existing solutions window for exercise: " + exercice.getTitre());
+                LOGGER.info("Réutilisation de la fenêtre existante de solutions pour l'exercice : " + exercice.getTitre());
             } else {
-                // No window exists, create a new one
-                LOGGER.info("Creating new solutions window for exercise: " + exercice.getTitre());
+                LOGGER.info("Création d'une nouvelle fenêtre de solutions pour l'exercice : " + exercice.getTitre());
                 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/solution_view.fxml"));
                 Parent root = loader.load();
@@ -487,20 +490,21 @@ public class ExerciceController {
                 stage.show();
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error opening solutions view", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors de l'ouverture de la vue des solutions", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Navigation impossible", 
-                    "Impossible d'afficher les solutions: " + e.getMessage());
+                    "Impossible d'afficher les solutions : " + e.getMessage());
         }
     }
     
     /**
-     * Confirm and delete an exercise
+     * Demande confirmation à l'utilisateur avant de supprimer un exercice.
+     * Supprime l'exercice si confirmé et affiche une alerte.
      */
     private void confirmAndDeleteExercise(Exercice exercice) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation de suppression");
-        alert.setHeaderText("Supprimer l'exercice: " + exercice.getTitre());
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer cet exercice? Cette action ne peut pas être annulée.");
+        alert.setHeaderText("Supprimer l'exercice : " + exercice.getTitre());
+        alert.setContentText("Êtes-vous sûr de vouloir supprimer cet exercice ? Cette action ne peut pas être annulée.");
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -512,13 +516,14 @@ public class ExerciceController {
                         "L'exercice a été supprimé avec succès.");
             } else {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de suppression", 
-                        "Impossible de supprimer l'exercice: opération échouée.");
+                        "Impossible de supprimer l'exercice : opération échouée.");
             }
         }
     }
     
     /**
-     * Setup the form for adding a new exercise
+     * Prépare le formulaire dans le cas de l'ajout d'un nouvel exercice.
+     * Initialise la matière et vide les champs du formulaire.
      */
     public void setupForAdding(int matiereId) {
         this.matiere = new Matiere(matiereId, "");
@@ -527,7 +532,8 @@ public class ExerciceController {
     }
     
     /**
-     * Setup the form for editing an existing exercise
+     * Prépare le formulaire dans le cas de la modification d'un exercice existant.
+     * Remplit les champs du formulaire avec les données de l'exercice sélectionné.
      */
     public void setupForEditing(Exercice exercice) {
         this.currentExercice = exercice;
@@ -540,7 +546,7 @@ public class ExerciceController {
     }
     
     /**
-     * Clear the form fields
+     * Vide les champs du formulaire.
      */
     private void clearForm() {
         if (titreField != null && descriptionField != null) {
@@ -550,7 +556,8 @@ public class ExerciceController {
     }
     
     /**
-     * Handle form submission (add/edit)
+     * Gère la soumission du formulaire.
+     * Valide les entrées et appelle la méthode d'ajout ou de mise à jour selon le mode.
      */
     @FXML
     private void handleSubmit() {
@@ -570,7 +577,8 @@ public class ExerciceController {
     }
     
     /**
-     * Validate the form inputs
+     * Valide les champs du formulaire.
+     * Retourne vrai si tous les champs obligatoires sont remplis.
      */
     private boolean validateForm() {
         return titreField != null && !titreField.getText().trim().isEmpty() &&
@@ -578,7 +586,7 @@ public class ExerciceController {
     }
     
     /**
-     * Add a new exercise
+     * Ajoute un nouvel exercice via le DAO.
      */
     private void addExercise() {
         try {
@@ -588,29 +596,29 @@ public class ExerciceController {
             Exercice exercice = new Exercice(0, titre, description, LocalDateTime.now(), 
                                           matiere.getId(), userId);
             
-            // Use the DAO method to add and return the created exercise with ID
+            // Utilisation du DAO pour ajouter l'exercice et récupérer l'objet avec son ID
             Exercice createdExercice = exerciceDAO.addExerciceAndReturn(exercice);
             
             if (createdExercice != null) {
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Exercice ajouté", 
                         "L'exercice a été ajouté avec succès.");
                 
-                // Pass the new exercise to the parent window
+                // Passage du nouvel exercice à la fenêtre parente pour mise à jour
                 Stage currentStage = (Stage) titreField.getScene().getWindow();
                 currentStage.setUserData(createdExercice);
             } else {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur d'ajout", 
-                        "Impossible d'ajouter l'exercice: opération échouée.");
+                        "Impossible d'ajouter l'exercice : opération échouée.");
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error adding exercise", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors de l'ajout de l'exercice", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur d'ajout", 
-                    "Impossible d'ajouter l'exercice: " + e.getMessage());
+                    "Impossible d'ajouter l'exercice : " + e.getMessage());
         }
     }
     
     /**
-     * Update an existing exercise
+     * Met à jour un exercice existant via le DAO.
      */
     private void updateExercise() {
         try {
@@ -627,20 +635,20 @@ public class ExerciceController {
                         "L'exercice a été modifié avec succès.");
                 
                 Stage currentStage = (Stage) titreField.getScene().getWindow();
-                currentStage.setUserData(Boolean.TRUE); // Signal that an update was made
+                currentStage.setUserData(Boolean.TRUE); // Signale qu'une mise à jour a été effectuée
             } else {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de modification", 
-                        "Impossible de modifier l'exercice: opération échouée.");
+                        "Impossible de modifier l'exercice : opération échouée.");
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating exercise", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors de la modification de l'exercice", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de modification", 
-                    "Impossible de modifier l'exercice: " + e.getMessage());
+                    "Impossible de modifier l'exercice : " + e.getMessage());
         }
     }
     
     /**
-     * Cancel the form
+     * Annule le formulaire et ferme la fenêtre active.
      */
     @FXML
     private void cancelForm() {
@@ -648,7 +656,7 @@ public class ExerciceController {
     }
     
     /**
-     * Close the form
+     * Ferme la fenêtre du formulaire.
      */
     private void closeForm() {
         if (titreField != null) {
@@ -658,7 +666,7 @@ public class ExerciceController {
     }
     
     /**
-     * Open form to add a new exercise
+     * Ouvre le formulaire pour ajouter un nouvel exercice.
      */
     @FXML
     private void openAddExerciseForm() {
@@ -666,68 +674,67 @@ public class ExerciceController {
     }
     
     /**
-     * Go back to matiere selection
+     * Retourne à la vue de sélection de matière.
+     * Ferme toutes les autres fenêtres ouvertes.
      */
     @FXML
     private void backToMatiereSelection() {
         try {
-            // Check if we have a valid window to work with
             if (exerciceTable != null) {
                 Stage currentStage = (Stage) exerciceTable.getScene().getWindow();
                 
-                // Close all other windows EXCEPT the current one
+                // Ferme toutes les autres fenêtres sauf celle courante
                 closeAllOtherWindows(currentStage);
                 
-                // Instead of just closing, load the matiere view to navigate back
+                // Chargement de la vue de sélection de matière
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/matiere_view.fxml"));
                 Parent root = loader.load();
                 
-                // Set up the controller
+                // Configuration du contrôleur de la vue matière
                 MatiereController controller = loader.getController();
                 controller.setUserId(userId);
                 controller.setUserRole(userRole);
                 
-                // Create a new scene and set it on the current stage
+                // Mise à jour de la scène actuelle avec la nouvelle vue
                 Scene scene = new Scene(root);
                 scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
                 
                 currentStage.setTitle("Sélection de matière");
                 currentStage.setScene(scene);
                 
-                LOGGER.info("Navigating back to matiere selection view and closing other windows");
+                LOGGER.info("Navigation vers la vue de sélection de matière et fermeture des autres fenêtres");
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error navigating back to matiere selection", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors du retour à la sélection de matière", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Navigation impossible", 
-                    "Impossible de retourner à la sélection de matière: " + e.getMessage());
+                    "Impossible de retourner à la sélection de matière : " + e.getMessage());
         }
     }
     
     /**
-     * Close all other open windows except the specified one
+     * Ferme toutes les fenêtres ouvertes sauf celle spécifiée.
      */
     private void closeAllOtherWindows(Stage exceptStage) {
-        // Create a list to hold stages to close to avoid ConcurrentModificationException
         List<Stage> stagesToClose = new ArrayList<>();
         
-        // Find all open windows
+        // Recherche de toutes les fenêtres ouvertes
         for (javafx.stage.Window window : javafx.stage.Window.getWindows()) {
             if (window instanceof Stage && window.isShowing() && window != exceptStage) {
                 stagesToClose.add((Stage) window);
             }
         }
         
-        // Close each stage
+        // Fermeture de chaque fenêtre identifiée
         for (Stage stage : stagesToClose) {
-            LOGGER.info("Closing window: " + stage.getTitle());
+            LOGGER.info("Fermeture de la fenêtre : " + stage.getTitle());
             stage.close();
         }
         
-        LOGGER.info("Closed " + stagesToClose.size() + " additional windows");
+        LOGGER.info("Fermeture de " + stagesToClose.size() + " fenêtre(s) supplémentaire(s)");
     }
     
     /**
-     * Show an alert dialog
+     * Affiche une boîte de dialogue d'alerte.
      */
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);
@@ -739,7 +746,7 @@ public class ExerciceController {
     }
     
     /**
-     * Refresh the list of exercises
+     * Rafraîchit la liste des exercices en rechargant les données.
      */
     @FXML
     private void refreshExercises() {
@@ -747,19 +754,18 @@ public class ExerciceController {
     }
     
     /**
-     * Set the exercise ID for the current view
+     * Définit l'identifiant d'exercice pour la vue courante.
+     * Charge l'exercice correspondant et met à jour la matière.
      */
     public void setExerciceId(int exerciceId) {
         try {
-            // Fetch the exercise details from the database
             Exercice exercice = exerciceDAO.getExerciceById(exerciceId);
             if (exercice != null) {
-                // If we found the exercise, set the matiere ID
                 this.matiere = new Matiere(exercice.getMatiereId(), "");
                 loadExercises();
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error setting exercice ID", e);
+            LOGGER.log(Level.SEVERE, "Erreur lors de la définition de l'ID d'exercice", e);
         }
     }
 }

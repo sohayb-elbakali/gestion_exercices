@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UtilisateurDAO {
+    /**
+     * Recherche un utilisateur dans la base de données par email, mot de passe et rôle.
+     * Renvoie l'utilisateur si trouvé, sinon renvoie null.
+     */
     public Utilisateur findByEmailAndPasswordAndRole(String email, String password, String role) {
         String sql = "SELECT * FROM utilisateur WHERE email = ? AND mot_de_passe = ? AND role = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -28,14 +32,14 @@ public class UtilisateurDAO {
                         rs.getString("role")
                 );
                 
-                // Try to get name if it exists, otherwise use default name
+                // Essayer de récupérer le nom s'il existe, sinon utiliser le nom par défaut
                 try {
                     String nom = rs.getString("nom");
                     if (nom != null && !nom.isEmpty()) {
                         user.setNom(nom);
                     }
                 } catch (SQLException e) {
-                    // Nom column might not exist, use default name
+                    // La colonne 'nom' n'existe peut-être pas, on utilise le nom par défaut
                 }
                 
                 return user;
@@ -46,6 +50,9 @@ public class UtilisateurDAO {
         return null;
     }
 
+    /**
+     * Récupère un utilisateur par son identifiant.
+     */
     public Utilisateur getById(int id) {
         String sql = "SELECT * FROM utilisateur WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -60,14 +67,14 @@ public class UtilisateurDAO {
                         rs.getString("role")
                 );
                 
-                // Try to get name if it exists, otherwise use default name
+                // Essayer de récupérer le nom s'il est disponible
                 try {
                     String nom = rs.getString("nom");
                     if (nom != null && !nom.isEmpty()) {
                         user.setNom(nom);
                     }
                 } catch (SQLException e) {
-                    // Nome column might not exist, use default name
+                    // La colonne 'nom' n'existe pas, utiliser le nom par défaut
                 }
                 
                 return user;
@@ -79,10 +86,11 @@ public class UtilisateurDAO {
     }
     
     /**
-     * Add a new user to the database
+     * Ajoute un nouvel utilisateur dans la base de données.
+     * Cette méthode tente d'ajouter avec le champ 'nom' si disponible.
      */
     public boolean addUtilisateur(Utilisateur user) {
-        // First check if 'nom' column exists
+        // Vérifier si la colonne 'nom' existe
         if (hasNomColumn()) {
             String sql = "INSERT INTO utilisateur (email, mot_de_passe, role, nom) VALUES (?, ?, ?, ?)";
             try (Connection conn = DatabaseConnection.getConnection();
@@ -103,7 +111,7 @@ public class UtilisateurDAO {
     }
     
     /**
-     * Fallback method to add a user without the nom column
+     * Méthode de secours pour ajouter un utilisateur sans utiliser la colonne 'nom'.
      */
     private boolean fallbackAddUser(Utilisateur user) {
         String sql = "INSERT INTO utilisateur (email, mot_de_passe, role) VALUES (?, ?, ?)";
@@ -121,21 +129,21 @@ public class UtilisateurDAO {
     }
     
     /**
-     * Check if the nom column exists in the utilisateur table
+     * Vérifie si la colonne 'nom' existe dans la table 'utilisateur'.
      */
     private boolean hasNomColumn() {
         try (Connection conn = DatabaseConnection.getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
             ResultSet columns = metaData.getColumns(null, null, "utilisateur", "nom");
-            return columns.next(); // Returns true if the column exists
+            return columns.next(); // Renvoie true si la colonne existe
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // Assume the column doesn't exist if there's an error
+            return false; // En cas d'erreur, on suppose que la colonne n'existe pas
         }
     }
     
     /**
-     * Check if a user with the given email already exists
+     * Vérifie si un utilisateur avec l'email donné existe déjà.
      */
     public boolean userExists(String email) {
         String sql = "SELECT COUNT(*) FROM utilisateur WHERE email = ?";
@@ -153,7 +161,7 @@ public class UtilisateurDAO {
     }
     
     /**
-     * Get all users (for admin use)
+     * Récupère tous les utilisateurs (pour utilisation admin).
      */
     public List<Utilisateur> getAllUsers() {
         List<Utilisateur> users = new ArrayList<>();
@@ -170,14 +178,14 @@ public class UtilisateurDAO {
                         rs.getString("role")
                 );
                 
-                // Try to get name if it exists
+                // On tente de récupérer le nom s'il est disponible
                 try {
                     String nom = rs.getString("nom");
                     if (nom != null && !nom.isEmpty()) {
                         user.setNom(nom);
                     }
                 } catch (SQLException e) {
-                    // Nom column might not exist
+                    // La colonne 'nom' n'existe pas
                 }
                 
                 users.add(user);
@@ -189,7 +197,7 @@ public class UtilisateurDAO {
     }
     
     /**
-     * Delete a user by ID
+     * Supprime un utilisateur par son identifiant.
      */
     public boolean deleteUser(int id) {
         String sql = "DELETE FROM utilisateur WHERE id = ?";
@@ -203,4 +211,4 @@ public class UtilisateurDAO {
             return false;
         }
     }
-} 
+}

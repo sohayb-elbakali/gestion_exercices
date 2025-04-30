@@ -38,6 +38,9 @@ public class UserManagementController {
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
     private final ObservableList<Utilisateur> userList = FXCollections.observableArrayList();
     
+    /**
+     * Sets the admin ID and loads all users.
+     */
     public void setAdminId(int adminId) {
         this.adminId = adminId;
         LOGGER.info("Admin ID set to: " + adminId);
@@ -51,7 +54,7 @@ public class UserManagementController {
     }
     
     /**
-     * Configure the table view columns and cell factories
+     * Configure the table view columns and cell factories.
      */
     private void configureTableView() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -100,7 +103,7 @@ public class UserManagementController {
     }
     
     /**
-     * Load all users from the database
+     * Load all users from the database.
      */
     private void loadUsers() {
         userList.clear();
@@ -109,7 +112,7 @@ public class UserManagementController {
     }
     
     /**
-     * Show user details in a dialog
+     * Show user details in a dialog.
      */
     private void showUserDetails(Utilisateur user) {
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -131,7 +134,7 @@ public class UserManagementController {
     }
     
     /**
-     * Confirm and delete a user
+     * Confirm and delete a user.
      */
     private void confirmAndDeleteUser(Utilisateur user) {
         if (user.getId() == adminId) {
@@ -163,7 +166,7 @@ public class UserManagementController {
     }
     
     /**
-     * Open the form to add a new user
+     * Open the form to add a new user.
      */
     @FXML
     private void openAddUserForm() {
@@ -191,7 +194,7 @@ public class UserManagementController {
     }
     
     /**
-     * Return to the previous screen
+     * Return to the previous screen.
      */
     @FXML
     private void handleBack() {
@@ -202,10 +205,10 @@ public class UserManagementController {
     }
     
     /**
-     * Show a status message
+     * Show a status message.
      */
     private void showStatus(String message, boolean isError) {
         statusLabel.setText(message);
         statusLabel.setStyle("-fx-text-fill: " + (isError ? "red" : "green"));
     }
-} 
+}

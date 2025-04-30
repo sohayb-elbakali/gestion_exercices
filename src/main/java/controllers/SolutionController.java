@@ -28,12 +28,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller for solution management (viewing, adding, editing, and deleting)
+ * Contrôleur pour la gestion des solutions :
+ * • Affichage de la liste des solutions
+ * • Ajout, modification et suppression de solutions
+ *
+ * Remarque : La logique métier n'est pas modifiée, seul les commentaires
+ * importants en français ont été ajoutés pour clarifier le fonctionnement.
  */
 public class SolutionController {
+    // Logger pour suivre les opérations et afficher les informations importantes
     private static final Logger LOGGER = Logger.getLogger(SolutionController.class.getName());
 
-    // FXML components for solution list view
+    // Composants FXML pour la vue liste des solutions
     @FXML private TableView<Solution> solutionTable;
     @FXML private TableColumn<Solution, String> contenuColumn;
     @FXML private TableColumn<Solution, LocalDateTime> dateColumn;
@@ -41,11 +47,11 @@ public class SolutionController {
     @FXML private TableColumn<Solution, Void> actionsColumn;
     @FXML private Button addSolutionButton;
     
-    // FXML components for solution form
+    // Composants FXML pour le formulaire de solution
     @FXML private TextArea contenuField;
     @FXML private Button submitButton;
     
-    // State variables
+    // Variables d'état
     private int userId;
     private String userRole;
     private int exerciceId;
@@ -53,16 +59,19 @@ public class SolutionController {
     private boolean isEditing = false;
     private boolean showUserSolutionsOnly = false;
     
+    // Accès aux données via le DAO et liste observable pour le TableView
     private final SolutionDAO solutionDAO = new SolutionDAO();
     private final ObservableList<Solution> solutionList = FXCollections.observableArrayList();
 
     /**
-     * Initialize the controller
+     * Méthode d'initialisation du contrôleur.
+     * Configure le TableView, associe la propriété du bouton de soumission et met à jour les permissions de l'IU.
      */
     @FXML
     public void initialize() {
         configureTableView();
         
+        // Lie le texte du bouton de soumission à l'état d'édition (Modifier/Ajouter)
         if (submitButton != null) {
             submitButton.textProperty().bind(
                 javafx.beans.binding.Bindings.when(
@@ -71,11 +80,10 @@ public class SolutionController {
             );
         }
         
-        // Add a listener to handle initialization after the scene is loaded
+        // Dès que la scène est chargée, mettre à jour les permissions d'affichage
         if (solutionTable != null) {
             solutionTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
                 if (newScene != null) {
-                    // Scene is now available, we can update the UI permissions
                     updateUIPermissions();
                 }
             });
@@ -83,17 +91,18 @@ public class SolutionController {
     }
     
     /**
-     * Configure the table view columns and cell factories
+     * Configure les colonnes du TableView et définit les usines à cellules.
+     * Important pour l'affichage et la mise en forme des données, notamment la date.
      */
     private void configureTableView() {
         if (solutionTable == null) return;
         
-        // Set up the column cell value factories
+        // Attribution des valeurs des colonnes aux propriétés de l'objet Solution
         contenuColumn.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("dateCreation"));
         auteurColumn.setCellValueFactory(new PropertyValueFactory<>("auteurNom"));
         
-        // Format the date column
+        // Formatage de la colonne date
         dateColumn.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(LocalDateTime item, boolean empty) {
@@ -103,26 +112,28 @@ public class SolutionController {
             }
         });
         
-        // Add the action buttons for each row
+        // Attribution de boutons d'action pour chaque ligne de solution
         actionsColumn.setCellFactory(param -> createActionButtons());
     }
     
     /**
-     * Create action buttons for each table row
+     * Crée les boutons d'action (Voir, Modifier, Supprimer) pour chaque ligne du TableView.
+     * Seuls les professeurs ou l'auteur de la solution peuvent modifier ou supprimer.
      */
     private TableCell<Solution, Void> createActionButtons() {
         return new TableCell<>() {
+            // Déclaration et configuration des boutons
             private final Button viewButton = new Button("Voir");
             private final Button editButton = new Button("Modifier");
             private final Button deleteButton = new Button("Supprimer");
             
             {
-                // Set up button actions
+                // Définition des actions lors du clic sur chaque bouton
                 viewButton.setOnAction(event -> showSolutionDetails(getTableRow().getItem()));
                 editButton.setOnAction(event -> openSolutionEditor(getTableRow().getItem()));
                 deleteButton.setOnAction(event -> confirmAndDeleteSolution(getTableRow().getItem()));
                 
-                // Apply CSS classes
+                // Application des styles CSS personnalisés
                 viewButton.getStyleClass().add("button-blue");
                 editButton.getStyleClass().add("button-yellow");
                 deleteButton.getStyleClass().add("button-red");
@@ -137,19 +148,21 @@ public class SolutionController {
                     return;
                 }
                 
+                // Récupération de la solution associée à la ligne
                 Solution solution = getTableRow().getItem();
                 if (solution == null) {
                     setGraphic(null);
                     return;
                 }
                 
+                // Création d'un conteneur HBox pour organiser les boutons horizontalement
                 HBox buttonBox = new HBox(5);
                 buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
                 
-                // Everyone can view solutions
+                // Bouton Vue disponible pour tous
                 buttonBox.getChildren().add(viewButton);
                 
-                // Only professors or the author can edit/delete
+                // Seuls les professeurs ou l'auteur de la solution peuvent modifier ou supprimer
                 boolean canModify = "Professeur".equals(userRole) || solution.getAuteurId() == userId;
                 if (canModify) {
                     buttonBox.getChildren().addAll(editButton, deleteButton);
@@ -161,7 +174,7 @@ public class SolutionController {
     }
     
     /**
-     * Set the user ID
+     * Définit l'ID de l'utilisateur et charge les solutions correspondantes.
      */
     public void setUserId(int userId) {
         this.userId = userId;
@@ -169,24 +182,23 @@ public class SolutionController {
     }
     
     /**
-     * Set the user role
+     * Définit le rôle de l'utilisateur.
+     * Pour les étudiants, le bouton d'ajout de solution est caché.
      */
     public void setUserRole(String userRole) {
         this.userRole = userRole;
         LOGGER.info("User role set to: " + userRole);
         
-        // Hide add solution button for students
         if (addSolutionButton != null && "Étudiant".equals(userRole)) {
             addSolutionButton.setVisible(false);
             addSolutionButton.setManaged(false);
         }
         
-        // Also update other UI elements when the scene is loaded
         updateUIPermissions();
     }
     
     /**
-     * Set the exercise ID for filtering solutions
+     * Définit l'ID de l'exercice pour filtrer les solutions.
      */
     public void setExerciceId(int exerciceId) {
         this.exerciceId = exerciceId;
@@ -194,7 +206,7 @@ public class SolutionController {
     }
     
     /**
-     * Set whether to show only user's solutions
+     * Détermine si seuls les solutions de l'utilisateur doivent être affichées.
      */
     public void setShowUserSolutionsOnly(boolean showUserSolutionsOnly) {
         this.showUserSolutionsOnly = showUserSolutionsOnly;
@@ -202,7 +214,7 @@ public class SolutionController {
     }
     
     /**
-     * Load solutions based on the current filter settings
+     * Charge les solutions selon les filtres actuels (par créateur ou par exercice).
      */
     private void loadSolutions() {
         solutionList.clear();
@@ -211,7 +223,7 @@ public class SolutionController {
             List<Solution> solutions = new ArrayList<>();
             
             if (showUserSolutionsOnly) {
-                // Show only user's solutions
+                // Récupère uniquement les solutions créées par l'utilisateur
                 try {
                     solutions = solutionDAO.getSolutionsByCreateur(userId);
                 } catch (Exception e) {
@@ -219,7 +231,7 @@ public class SolutionController {
                     solutions = solutionDAO.getSolutionsByAuteur(userId);
                 }
             } else if (exerciceId > 0) {
-                // Show solutions for a specific exercise
+                // Récupère les solutions pour un exercice spécifique
                 solutions = solutionDAO.getSolutionsByExercice(exerciceId);
             }
             
@@ -239,7 +251,7 @@ public class SolutionController {
     }
     
     /**
-     * Show solution details in a dialog
+     * Affiche les détails d'une solution dans une boite de dialogue.
      */
     private void showSolutionDetails(Solution solution) {
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -247,22 +259,25 @@ public class SolutionController {
         
         DialogPane dialogPane = new DialogPane();
         
+        // Affiche l'auteur de la solution en gras
         Label authorLabel = new Label("Auteur: " + solution.getAuteurNom());
         authorLabel.setStyle("-fx-font-weight: bold;");
         
+        // Affiche la date de création au format personnalisé
         Label dateLabel = new Label("Date: " + solution.getDateCreation().format(
             java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         
+        // Zone de texte pour afficher le contenu de la solution (non éditable)
         TextArea contenuArea = new TextArea(solution.getContenu());
         contenuArea.setEditable(false);
         contenuArea.setWrapText(true);
         contenuArea.setPrefHeight(300);
         
-        javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(10, 
-                                          authorLabel, 
-                                          dateLabel,
-                                          new Label("Contenu:"),
-                                          contenuArea);
+        VBox content = new VBox(10, 
+            authorLabel, 
+            dateLabel,
+            new Label("Contenu:"),
+            contenuArea);
         content.setPadding(new javafx.geometry.Insets(10));
         
         dialogPane.setContent(content);
@@ -273,21 +288,23 @@ public class SolutionController {
     }
     
     /**
-     * Open the solution editor for a new or existing solution
+     * Ouvre l'éditeur de solution pour ajouter ou modifier une solution.
+     * Lance une nouvelle fenêtre modale pour la saisie du formulaire.
      */
     private void openSolutionEditor(Solution solution) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/solution_form.fxml"));
             Parent root = loader.load();
             
+            // Récupère le contrôleur de l'éditeur de solution
             SolutionController controller = loader.getController();
             controller.setUserId(userId);
             
             if (solution != null) {
-                // Editing existing solution
+                // Mode édition
                 controller.setupForEditing(solution);
             } else {
-                // Adding new solution
+                // Mode ajout
                 controller.setupForAdding(exerciceId);
             }
             
@@ -299,17 +316,17 @@ public class SolutionController {
             stage.initModality(Modality.APPLICATION_MODAL);
             IconHelper.setStageIcon(stage);
             
-            // Add a listener to refresh the list when the window is closed
+            // À la fermeture de la fenêtre, rafraîchit la liste des solutions
             stage.setOnHidden(event -> {
                 if (stage.getUserData() instanceof Solution) {
-                    // If a new solution was created, add it directly to the list
+                    // Une solution a été créée et est ajoutée directement à la liste
                     Solution newSolution = (Solution) stage.getUserData();
                     solutionList.add(newSolution);
                     if (solutionTable != null) {
                         solutionTable.refresh();
                     }
                 } else if (Boolean.TRUE.equals(stage.getUserData())) {
-                    // Otherwise just reload all solutions
+                    // Sinon, recharge toutes les solutions
                     loadSolutions();
                 }
             });
@@ -323,7 +340,7 @@ public class SolutionController {
     }
     
     /**
-     * Setup the form for adding a new solution
+     * Prépare le formulaire pour l'ajout d'une nouvelle solution.
      */
     public void setupForAdding(int exerciceId) {
         this.exerciceId = exerciceId;
@@ -332,7 +349,7 @@ public class SolutionController {
     }
     
     /**
-     * Setup the form for editing an existing solution
+     * Prépare le formulaire pour l'édition d'une solution existante.
      */
     public void setupForEditing(Solution solution) {
         this.currentSolution = solution;
@@ -344,7 +361,7 @@ public class SolutionController {
     }
     
     /**
-     * Clear the form fields
+     * Vide le champ du formulaire.
      */
     private void clearForm() {
         if (contenuField != null) {
@@ -353,7 +370,7 @@ public class SolutionController {
     }
     
     /**
-     * Handle form submission (add/edit)
+     * Gère la soumission du formulaire (ajout ou modification de solution).
      */
     @FXML
     private void handleSubmit() {
@@ -373,14 +390,14 @@ public class SolutionController {
     }
     
     /**
-     * Validate the form inputs
+     * Valide que le formulaire a été correctement rempli.
      */
     private boolean validateForm() {
         return contenuField != null && !contenuField.getText().trim().isEmpty();
     }
     
     /**
-     * Add a new solution
+     * Ajoute une nouvelle solution.
      */
     private void addSolution() {
         try {
@@ -392,7 +409,7 @@ public class SolutionController {
             solution.setExerciceId(exerciceId);
             solution.setAuteurId(userId);
             
-            // Try to get user name from database for better display
+            // Récupère le nom de l'auteur pour un meilleur affichage
             try {
                 String authorName = getUserName(userId);
                 solution.setAuteurNom(authorName != null ? authorName : "Utilisateur " + userId);
@@ -400,32 +417,30 @@ public class SolutionController {
                 solution.setAuteurNom("Utilisateur " + userId);
             }
             
+            // Ajoute la solution et récupère l'objet créé (avec ID attribué)
             Solution createdSolution = solutionDAO.addSolutionAndReturn(solution);
             
             if (createdSolution != null) {
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Solution ajoutée", 
                         "La solution a été ajoutée avec succès.");
                 
-                // Pass the newly created solution back to the parent window
                 Stage currentStage = (Stage) contenuField.getScene().getWindow();
                 currentStage.setUserData(createdSolution);
                 
-                // Refresh solution list immediately
+                // Recharge la liste des solutions
                 if (solutionList != null) {
                     loadSolutions();
                 }
             } else {
-                // Fall back to old method if the new one fails
+                // Méthode de repli si la première méthode échoue
                 boolean success = solutionDAO.addSolution(solution);
                 if (success) {
                     showAlert(Alert.AlertType.INFORMATION, "Succès", "Solution ajoutée", 
                             "La solution a été ajoutée avec succès.");
                     
-                    // Mark that an item was added
                     Stage currentStage = (Stage) contenuField.getScene().getWindow();
                     currentStage.setUserData(Boolean.TRUE);
                     
-                    // Refresh solution list immediately
                     if (solutionList != null) {
                         loadSolutions();
                     }
@@ -442,7 +457,7 @@ public class SolutionController {
     }
     
     /**
-     * Helper method to get user name
+     * Méthode d'assistance pour obtenir le nom de l'utilisateur à partir de son ID.
      */
     private String getUserName(int userId) {
         try {
@@ -456,7 +471,7 @@ public class SolutionController {
     }
     
     /**
-     * Update an existing solution
+     * Met à jour une solution existante.
      */
     private void updateSolution() {
         try {
@@ -471,11 +486,9 @@ public class SolutionController {
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Solution modifiée", 
                         "La solution a été modifiée avec succès.");
                 
-                // Pass the updated solution back to the parent
                 Stage currentStage = (Stage) contenuField.getScene().getWindow();
                 currentStage.setUserData(currentSolution);
                 
-                // Refresh solution list immediately
                 if (solutionList != null) {
                     loadSolutions();
                 }
@@ -491,7 +504,7 @@ public class SolutionController {
     }
     
     /**
-     * Confirm and delete a solution
+     * Demande confirmation et supprime une solution.
      */
     private void confirmAndDeleteSolution(Solution solution) {
         if (solution == null) {
@@ -510,7 +523,7 @@ public class SolutionController {
                 boolean success = solutionDAO.deleteSolution(solution.getId());
                 
                 if (success) {
-                    // Remove the solution from the list directly
+                    // Supprime la solution de la liste et rafraîchit le TableView
                     solutionList.remove(solution);
                     if (solutionTable != null) {
                         solutionTable.refresh();
@@ -521,31 +534,29 @@ public class SolutionController {
                 } else {
                     showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de suppression", 
                             "Impossible de supprimer la solution: opération échouée.");
-                    // If delete failed in database but UI already removed it, reload to restore
                     loadSolutions();
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Error deleting solution", e);
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de suppression", 
                         "Impossible de supprimer la solution: " + e.getMessage());
-                loadSolutions(); // Reload to ensure UI consistency
+                loadSolutions();
             }
         }
     }
     
     /**
-     * Open the form to add a new solution
+     * Ouvre le formulaire pour l'ajout d'une nouvelle solution.
+     * Seules les solutions peuvent être ajoutées par des professeurs.
      */
     @FXML
     private void openAddSolutionForm() {
-        // Only professors can add solutions
         if ("Étudiant".equals(userRole)) {
             showAlert(Alert.AlertType.WARNING, "Action impossible", "Permission refusée", 
                     "Seuls les professeurs peuvent ajouter des solutions.");
             return;
         }
         
-        // Additional check for exercice id
         if (exerciceId <= 0) {
             showAlert(Alert.AlertType.WARNING, "Action impossible", "Information incomplète", 
                     "Veuillez sélectionner un exercice spécifique avant d'ajouter une solution.");
@@ -556,7 +567,7 @@ public class SolutionController {
     }
     
     /**
-     * Return to the previous screen
+     * Retourne à l'écran précédent (vue des exercices).
      */
     @FXML
     private void handleBack() {
@@ -569,8 +580,6 @@ public class SolutionController {
             controller.setUserRole(userRole);
             
             if (exerciceId > 0) {
-                // If we have an exercise ID, we should return to that exercise's view
-                // You'll need to get the matiere ID for this exercise
                 controller.setExerciceId(exerciceId);
             } else if (showUserSolutionsOnly) {
                 controller.setShowUserExercisesOnly(true);
@@ -592,7 +601,7 @@ public class SolutionController {
     }
     
     /**
-     * Cancel form editing
+     * Annule l'édition et ferme le formulaire.
      */
     @FXML
     private void handleCancel() {
@@ -600,7 +609,7 @@ public class SolutionController {
     }
     
     /**
-     * Close the current form
+     * Ferme le formulaire en cours.
      */
     private void closeForm() {
         if (contenuField != null) {
@@ -612,7 +621,7 @@ public class SolutionController {
     }
     
     /**
-     * Close the current stage
+     * Ferme la fenêtre ou le stage courant.
      */
     private void closeCurrentStage() {
         if (solutionTable != null) {
@@ -624,7 +633,7 @@ public class SolutionController {
     }
     
     /**
-     * Show an alert dialog
+     * Affiche une boîte de dialogue d'alerte avec le type, titre, en-tête et contenu spécifiés.
      */
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);
@@ -636,7 +645,7 @@ public class SolutionController {
     }
 
     /**
-     * Refresh the solutions list
+     * Rafraîchit la liste des solutions en rechargeant les données.
      */
     @FXML
     private void refreshSolutions() {
@@ -644,24 +653,22 @@ public class SolutionController {
     }
 
     /**
-     * After setting user role, update UI elements visibility
+     * Met à jour la visibilité des éléments de l'IU en fonction des permissions d'utilisateur.
+     * Pour les étudiants, le bouton d'ajout de solution est masqué.
      */
     private void updateUIPermissions() {
-        // Only proceed if we're a student - professors can see everything
         if (!"Étudiant".equals(userRole)) {
             return;
         }
         
-        // First check if we have direct reference to the add button
         if (addSolutionButton != null) {
             addSolutionButton.setVisible(false);
             addSolutionButton.setManaged(false);
             return;
         }
         
-        // Find the Add Solution button and hide it for students (fallback method)
+        // Si le bouton n'est pas directement référencé, recherche dans la hiérarchie de la scène
         if (solutionTable != null && solutionTable.getScene() != null) {
-            // Look for the button in the top VBox
             BorderPane root = (BorderPane) solutionTable.getScene().getRoot();
             if (root.getTop() instanceof VBox) {
                 VBox topBox = (VBox) root.getTop();
@@ -683,4 +690,4 @@ public class SolutionController {
             }
         }
     }
-} 
+}
