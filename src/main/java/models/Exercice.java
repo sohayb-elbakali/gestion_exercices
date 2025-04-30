@@ -10,6 +10,7 @@ public class Exercice {
     private final int matiereId;
     private final int createurId;
     private Utilisateur createur; // Reference to the creator
+    private String matiereNom; // Name of the matiere/subject
 
     public Exercice(int id, String titre, String description,
                     LocalDateTime dateCreation, int matiereId, int createurId) {
@@ -20,6 +21,7 @@ public class Exercice {
         this.matiereId = matiereId;
         this.createurId = createurId;
         this.createur = null; // To be set later
+        this.matiereNom = ""; // To be set later
     }
 
     // Getters
@@ -30,9 +32,11 @@ public class Exercice {
     public int getMatiereId() { return matiereId; }
     public int getCreateurId() { return createurId; }
     public Utilisateur getCreateur() { return createur; }
+    public String getMatiereNom() { return matiereNom; }
 
     // Setters
     public void setTitre(String titre) { this.titre = titre; }
     public void setDescription(String description) { this.description = description; }
     public void setCreateur(Utilisateur createur) { this.createur = createur; }
+    public void setMatiereNom(String matiereNom) { this.matiereNom = matiereNom; }
 }

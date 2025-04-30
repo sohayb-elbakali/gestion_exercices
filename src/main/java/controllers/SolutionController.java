@@ -17,6 +17,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Solution;
 import models.Utilisateur;
+import utils.IconHelper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -296,6 +297,7 @@ public class SolutionController {
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             stage.setScene(scene);
             stage.initModality(Modality.APPLICATION_MODAL);
+            IconHelper.setStageIcon(stage);
             
             // Add a listener to refresh the list when the window is closed
             stage.setOnHidden(event -> {
@@ -629,6 +631,7 @@ public class SolutionController {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
+        IconHelper.setDialogIcon(alert);
         alert.showAndWait();
     }
 

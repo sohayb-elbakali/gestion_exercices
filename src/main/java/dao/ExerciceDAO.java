@@ -11,7 +11,9 @@ import java.util.List;
 public class ExerciceDAO {
     public List<Exercice> getExercicesByMatiere(int matiereId) {
         List<Exercice> exercices = new ArrayList<>();
-        String sql = "SELECT * FROM exercice WHERE matiere_id = ?";
+        String sql = "SELECT e.*, m.nom as matiere_nom FROM exercice e " +
+                    "JOIN matiere m ON e.matiere_id = m.id " +
+                    "WHERE e.matiere_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, matiereId);
@@ -19,14 +21,16 @@ public class ExerciceDAO {
             while (rs.next()) {
                 Timestamp timestamp = rs.getTimestamp("date_creation");
                 LocalDateTime dateCreation = timestamp != null ? timestamp.toLocalDateTime() : LocalDateTime.now();
-                exercices.add(new Exercice(
+                Exercice exercice = new Exercice(
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("description"),
                         dateCreation,
                         rs.getInt("matiere_id"),
                         rs.getInt("createur_id")
-                ));
+                );
+                exercice.setMatiereNom(rs.getString("matiere_nom"));
+                exercices.add(exercice);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,7 +121,9 @@ public class ExerciceDAO {
     }
 
     public Exercice getExerciceById(int id) {
-        String sql = "SELECT * FROM exercice WHERE id = ?";
+        String sql = "SELECT e.*, m.nom as matiere_nom FROM exercice e " +
+                    "JOIN matiere m ON e.matiere_id = m.id " +
+                    "WHERE e.id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
@@ -125,7 +131,7 @@ public class ExerciceDAO {
             if (rs.next()) {
                 Timestamp timestamp = rs.getTimestamp("date_creation");
                 LocalDateTime dateCreation = timestamp != null ? timestamp.toLocalDateTime() : LocalDateTime.now();
-                return new Exercice(
+                Exercice exercice = new Exercice(
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("description"),
@@ -133,6 +139,8 @@ public class ExerciceDAO {
                         rs.getInt("matiere_id"),
                         rs.getInt("createur_id")
                 );
+                exercice.setMatiereNom(rs.getString("matiere_nom"));
+                return exercice;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -142,7 +150,9 @@ public class ExerciceDAO {
 
     public List<Exercice> getExercicesByCreateur(int createurId) {
         List<Exercice> exercices = new ArrayList<>();
-        String sql = "SELECT * FROM exercice WHERE createur_id = ?";
+        String sql = "SELECT e.*, m.nom as matiere_nom FROM exercice e " +
+                    "JOIN matiere m ON e.matiere_id = m.id " +
+                    "WHERE e.createur_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, createurId);
@@ -150,18 +160,109 @@ public class ExerciceDAO {
             while (rs.next()) {
                 Timestamp timestamp = rs.getTimestamp("date_creation");
                 LocalDateTime dateCreation = timestamp != null ? timestamp.toLocalDateTime() : LocalDateTime.now();
-                exercices.add(new Exercice(
+                Exercice exercice = new Exercice(
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("description"),
                         dateCreation,
                         rs.getInt("matiere_id"),
                         rs.getInt("createur_id")
-                ));
+                );
+                exercice.setMatiereNom(rs.getString("matiere_nom"));
+                exercices.add(exercice);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return exercices;
+    }
+
+    /**
+     * Get a list of all exercises in the database
+     */
+    public List<Exercice> getAllExercices() {
+        List<Exercice> exercices = new ArrayList<>();
+        String sql = "SELECT e.*, m.nom as matiere_nom FROM exercice e " +
+                    "JOIN matiere m ON e.matiere_id = m.id";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Timestamp timestamp = rs.getTimestamp("date_creation");
+                LocalDateTime dateCreation = timestamp != null ? timestamp.toLocalDateTime() : LocalDateTime.now();
+                Exercice exercice = new Exercice(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("description"),
+                        dateCreation,
+                        rs.getInt("matiere_id"),
+                        rs.getInt("createur_id")
+                );
+                exercice.setMatiereNom(rs.getString("matiere_nom"));
+                exercices.add(exercice);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return exercices;
+    }
+    
+    /**
+     * Add an exercise and return the created exercise with its ID
+     */
+    public Exercice addExerciceAndReturn(Exercice exercice) {
+        String insertSql = "INSERT INTO exercice (titre, description, date_creation, matiere_id, createur_id) VALUES (?, ?, ?, ?, ?)";
+        String getLastIdSql = "SELECT LAST_INSERT_ID()";
+        
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
+            
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                insertStmt.setString(1, exercice.getTitre());
+                insertStmt.setString(2, exercice.getDescription());
+                insertStmt.setTimestamp(3, Timestamp.valueOf(exercice.getDateCreation()));
+                insertStmt.setInt(4, exercice.getMatiereId());
+                insertStmt.setInt(5, exercice.getCreateurId());
+                insertStmt.executeUpdate();
+            }
+            
+            int lastInsertId = 0;
+            try (PreparedStatement idStmt = conn.prepareStatement(getLastIdSql);
+                 ResultSet rs = idStmt.executeQuery()) {
+                if (rs.next()) {
+                    lastInsertId = rs.getInt(1);
+                }
+            }
+            
+            conn.commit();
+            
+            if (lastInsertId > 0) {
+                return getExerciceById(lastInsertId);
+            }
+            
+            return null;
+        } catch (SQLException e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException closeEx) {
+                closeEx.printStackTrace();
+            }
+        }
     }
 } 

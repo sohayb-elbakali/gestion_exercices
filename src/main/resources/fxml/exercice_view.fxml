@@ -7,7 +7,7 @@
 <BorderPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="controllers.ExerciceController"
-           prefWidth="800" prefHeight="600">
+           prefWidth="900" prefHeight="600">
            
     <top>
         <VBox spacing="10">
@@ -17,9 +17,14 @@
             
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Button text="Retour" onAction="#backToMatiereSelection" styleClass="button-back"/>
-                <Label text="Exercices" styleClass="title-label" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                <Label fx:id="titleLabel" text="Exercices" styleClass="title-label" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Ajouter un exercice" onAction="#openAddExerciseForm" styleClass="button-add"/>
+                <Button fx:id="addExerciceButton" text="Ajouter un exercice" onAction="#openAddExerciseForm" styleClass="button-add"/>
+            </HBox>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Rafraîchir" onAction="#refreshExercises" styleClass="button-refresh"/>
+                <Button text="Mes Exercices" onAction="#openMyExercises" styleClass="button-primary"/>
             </HBox>
             
             <Separator/>
@@ -29,13 +34,27 @@
     <center>
         <TableView fx:id="exerciceTable">
             <columns>
-                <TableColumn fx:id="titreColumn" text="Titre" prefWidth="300"/>
+                <TableColumn fx:id="titreColumn" text="Titre" prefWidth="250"/>
+                <TableColumn fx:id="matiereColumn" text="Matière" prefWidth="150"/>
                 <TableColumn fx:id="dateColumn" text="Date de création" prefWidth="150"/>
-                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="250"/>
+                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="350"/>
             </columns>
             <placeholder>
                 <Label text="Aucun exercice trouvé"/>
             </placeholder>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
         </TableView>
     </center>
+    
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Tous les étudiants peuvent maintenant créer et gérer des exercices" 
+                   style="-fx-font-style: italic; -fx-text-fill: #555;"/>
+        </HBox>
+    </bottom>
 </BorderPane> 

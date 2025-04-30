@@ -3,10 +3,8 @@ package main;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
-
-import java.io.InputStream;
+import utils.IconHelper;
 
 public class Main extends Application {
     @Override
@@ -18,16 +16,8 @@ public class Main extends Application {
         // Set the application title
         primaryStage.setTitle("Education Management System");
         
-        // Set the application icon
-        try (InputStream iconStream = getClass().getResourceAsStream("/../../lib/images/education.png")) {
-            if (iconStream != null) {
-                primaryStage.getIcons().add(new Image(iconStream));
-            } else {
-                System.err.println("Could not load application icon");
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading icon: " + e.getMessage());
-        }
+        // Set the application icon using the helper class
+        IconHelper.setStageIcon(primaryStage);
         
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);

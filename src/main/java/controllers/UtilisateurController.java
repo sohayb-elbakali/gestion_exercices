@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import models.Utilisateur;
+import utils.IconHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,12 +73,17 @@ public class UtilisateurController {
             MatiereController controller = loader.getController();
             controller.setUserId(userId);
             
+            // Set the user role
+            String role = roleComboBox.getValue();
+            controller.setUserRole(role);
+            
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
             Stage stage = new Stage();
             stage.setTitle("Sélection de matière");
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
             
             closeCurrentStage();
@@ -100,6 +106,7 @@ public class UtilisateurController {
             Stage stage = new Stage();
             stage.setTitle("Connexion");
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
             
             closeCurrentStage();
@@ -125,6 +132,7 @@ public class UtilisateurController {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
+        IconHelper.setDialogIcon(alert);
         alert.showAndWait();
     }
 } 

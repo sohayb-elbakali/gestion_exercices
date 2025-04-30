@@ -10,9 +10,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Matiere;
+import utils.IconHelper;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -20,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller for managing matieres (subjects)
+ * Unified controller for managing matieres (subjects) - includes editor functionality
  */
 public class MatiereManagementController {
     private static final Logger LOGGER = Logger.getLogger(MatiereManagementController.class.getName());
@@ -149,6 +154,7 @@ public class MatiereManagementController {
             Stage stage = new Stage();
             stage.setTitle("Exercices - " + matiere.getNom());
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
             
         } catch (IOException e) {
@@ -160,44 +166,136 @@ public class MatiereManagementController {
     
     /**
      * Open the editor for adding or editing a matiere
+     * Now creates a dialog directly instead of loading a separate FXML
      */
     private void openMatiereEditor(Matiere matiere) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/matiere_editor.fxml"));
-            Parent root = loader.load();
+            // Create dialog window
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.setTitle(matiere != null ? "Modifier la matière" : "Ajouter une matière");
             
-            MatiereEditorController controller = loader.getController();
+            // Create editor form
+            VBox dialogRoot = new VBox(15);
+            dialogRoot.setPadding(new Insets(20));
+            dialogRoot.setAlignment(Pos.CENTER);
             
+            Label titleLabel = new Label(matiere != null ? "Modifier la matière" : "Ajouter une matière");
+            titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+            
+            GridPane formGrid = new GridPane();
+            formGrid.setHgap(10);
+            formGrid.setVgap(10);
+            formGrid.setAlignment(Pos.CENTER);
+            
+            Label nomLabel = new Label("Nom de la matière:");
+            TextField nomField = new TextField();
+            nomField.setPromptText("Entrez le nom de la matière");
             if (matiere != null) {
-                // Editing existing matiere
-                controller.setupForEditing(matiere);
-            } else {
-                // Adding new matiere
-                controller.setupForAdding();
+                nomField.setText(matiere.getNom());
             }
             
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            formGrid.add(nomLabel, 0, 0);
+            formGrid.add(nomField, 1, 0);
             
-            Stage stage = new Stage();
-            stage.setTitle(matiere != null ? "Modifier la matière" : "Ajouter une matière");
-            stage.setScene(scene);
-            stage.initModality(Modality.APPLICATION_MODAL);
+            Label editorStatusLabel = new Label("");
+            
+            HBox buttonBox = new HBox(10);
+            buttonBox.setAlignment(Pos.CENTER_RIGHT);
+            
+            Button saveButton = new Button(matiere != null ? "Modifier" : "Ajouter");
+            saveButton.getStyleClass().add("button-green");
+            Button cancelButton = new Button("Annuler");
+            cancelButton.getStyleClass().add("button-red");
+            
+            buttonBox.getChildren().addAll(saveButton, cancelButton);
+            
+            dialogRoot.getChildren().addAll(titleLabel, formGrid, editorStatusLabel, buttonBox);
+            
+            // Add event handlers
+            final boolean isEditing = matiere != null;
+            
+            saveButton.setOnAction(event -> {
+                if (nomField.getText().trim().isEmpty()) {
+                    editorStatusLabel.setText("Le nom de la matière est obligatoire.");
+                    editorStatusLabel.setStyle("-fx-text-fill: red;");
+                    return;
+                }
+                
+                String nom = nomField.getText().trim();
+                
+                // Check for existing matiere with same name
+                if ((!isEditing || (isEditing && !matiere.getNom().equals(nom))) && 
+                     matiereDAO.matiereExists(nom)) {
+                    editorStatusLabel.setText("Une matière avec ce nom existe déjà.");
+                    editorStatusLabel.setStyle("-fx-text-fill: red;");
+                    return;
+                }
+                
+                try {
+                    boolean success;
+                    
+                    if (isEditing) {
+                        // Update existing matiere
+                        matiere.setNom(nom);
+                        success = matiereDAO.updateMatiere(matiere);
+                        if (success) {
+                            dialog.setUserData(matiere);
+                        }
+                    } else {
+                        // Add new matiere
+                        Matiere newMatiere = new Matiere(nom);
+                        Matiere createdMatiere = matiereDAO.addMatiereAndReturn(newMatiere);
+                        
+                        if (createdMatiere != null) {
+                            dialog.setUserData(createdMatiere);
+                            success = true;
+                        } else {
+                            success = matiereDAO.addMatiere(newMatiere);
+                            if (success) {
+                                dialog.setUserData(Boolean.TRUE);
+                            }
+                        }
+                    }
+                    
+                    if (success) {
+                        editorStatusLabel.setText(isEditing ? "Matière modifiée avec succès!" : "Matière ajoutée avec succès!");
+                        editorStatusLabel.setStyle("-fx-text-fill: green;");
+                        
+                        // Close dialog after short delay
+                        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
+                        pause.setOnFinished(e -> dialog.close());
+                        pause.play();
+                    } else {
+                        editorStatusLabel.setText("Erreur lors de l'opération.");
+                        editorStatusLabel.setStyle("-fx-text-fill: red;");
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Error in matiere editor", e);
+                    editorStatusLabel.setText("Erreur: " + e.getMessage());
+                    editorStatusLabel.setStyle("-fx-text-fill: red;");
+                }
+            });
+            
+            cancelButton.setOnAction(event -> dialog.close());
+            
+            // Show dialog
+            Scene dialogScene = new Scene(dialogRoot);
+            dialogScene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialog.setScene(dialogScene);
+            dialog.setMinWidth(400);
+            dialog.setMinHeight(250);
             
             // Add listener to update the table when the window is closed
-            stage.setOnHidden(event -> {
-                if (stage.getUserData() instanceof Matiere) {
-                    // A matiere was added or updated
-                    loadMatieres();
-                } else if (Boolean.TRUE.equals(stage.getUserData())) {
-                    // Something was changed but we don't have the object
+            dialog.setOnHidden(event -> {
+                if (dialog.getUserData() instanceof Matiere || Boolean.TRUE.equals(dialog.getUserData())) {
                     loadMatieres();
                 }
             });
             
-            stage.showAndWait();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error opening matiere editor", e);
+            dialog.showAndWait();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error creating matiere editor dialog", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur d'ouverture", 
                     "Impossible d'ouvrir l'éditeur de matière: " + e.getMessage());
         }
@@ -254,6 +352,7 @@ public class MatiereManagementController {
             Stage stage = new Stage();
             stage.setTitle("Sélection de matière");
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
             
             closeCurrentStage();
@@ -290,6 +389,7 @@ public class MatiereManagementController {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
+        IconHelper.setDialogIcon(alert);
         alert.showAndWait();
     }
     

@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Utilisateur;
+import utils.IconHelper;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -132,6 +133,7 @@ public class LoginController {
             Stage stage = new Stage();
             stage.setTitle("Sélection de matière");
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
             
             closeCurrentStage();
@@ -158,6 +160,7 @@ public class LoginController {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
+        IconHelper.setDialogIcon(alert);
         alert.showAndWait();
     }
 } 

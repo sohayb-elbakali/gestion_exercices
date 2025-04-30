@@ -82,6 +82,20 @@
     -fx-border-radius: 8;
 }
 
+/* Action buttons in TableView */
+.table-cell .button {
+    -fx-min-width: 80px;
+    -fx-pref-width: 100px;
+    -fx-max-width: 120px;
+    -fx-padding: 5 8 5 8;
+    -fx-font-size: 12px;
+}
+
+.table-cell VBox, .table-cell HBox {
+    -fx-alignment: center;
+    -fx-spacing: 5;
+}
+
 /* TableView styling */
 .table-view {
     -fx-background-color: white;
@@ -93,6 +107,12 @@
 .table-view .column-header {
     -fx-background-color: #f0f4f8;
     -fx-font-weight: bold;
+}
+
+/* Table column for actions styling */
+.table-view .table-column.actions-column {
+    -fx-alignment: CENTER;
+    -fx-padding: 5;
 }
 
 /* Make the app feel more polished */
@@ -216,6 +236,34 @@
     -fx-text-fill: white;
 }
 
+/* Button refresh */
+.button-refresh {
+    -fx-background-color: #7e57c2;
+    -fx-text-fill: white;
+}
+
+.button-refresh:hover {
+    -fx-background-color: derive(#7e57c2, -10%);
+}
+
+.button-primary {
+    -fx-background-color: #1976D2;
+    -fx-text-fill: white;
+}
+
+.button-primary:hover {
+    -fx-background-color: derive(#1976D2, -10%);
+}
+
+.button-back {
+    -fx-background-color: #78909c;
+    -fx-text-fill: white;
+}
+
+.button-back:hover {
+    -fx-background-color: derive(#78909c, -10%);
+}
+
 /* Table styles */
 .table-view {
     -fx-background-color: white;
@@ -248,9 +296,8 @@
 .text-field, .text-area, .combo-box {
     -fx-background-color: white;
     -fx-border-color: #ddd;
-    -fx-border-radius: 3;
-    -fx-background-radius: 3;
-    -fx-padding: 5;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
 }
 
 .text-field:focused, .text-area:focused, .combo-box:focused {

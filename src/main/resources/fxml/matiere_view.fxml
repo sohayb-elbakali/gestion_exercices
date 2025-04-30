@@ -15,8 +15,8 @@
     
     <HBox alignment="CENTER_RIGHT" spacing="10">
         <Button text="Déconnexion" onAction="#handleLogout" styleClass="button-red"/>
-        <Button text="Gérer les matières" onAction="#manageMatieres" styleClass="button-green"/>
-        <Button text="Gérer les utilisateurs" onAction="#manageUsers" styleClass="button-blue"/>
+        <Button fx:id="manageMatiereButton" text="Gérer les matières" onAction="#manageMatieres" styleClass="button-green"/>
+        <Button fx:id="manageUsersButton" text="Gérer les utilisateurs" onAction="#manageUsers" styleClass="button-blue"/>
     </HBox>
     
     <Label text="Sélectionner une matière" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
@@ -29,7 +29,7 @@
     <Separator />
     
     <HBox alignment="CENTER" spacing="20">
-        <Button text="Mes Exercices" onAction="#showMyExercises" styleClass="button-blue" prefWidth="200"/>
-        <Button text="Mes Solutions" onAction="#showMySolutions" styleClass="button-yellow" prefWidth="200"/>
+        <Button fx:id="myExercicesButton" text="Mes Exercices" onAction="#showMyExercises" styleClass="button-blue" prefWidth="200"/>
+        <Button fx:id="mySolutionsButton" text="Mes Solutions" onAction="#showMySolutions" styleClass="button-yellow" prefWidth="200"/>
     </HBox>
 </VBox> 

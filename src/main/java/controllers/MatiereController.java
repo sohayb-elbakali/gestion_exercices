@@ -6,21 +6,25 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.stage.Stage;
 import models.Matiere;
+import utils.IconHelper;
 
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller for subject (matiere) management and selection
+ * Unified controller for subject (matiere) selection and navigation
  */
 public class MatiereController {
     private static final Logger LOGGER = Logger.getLogger(MatiereController.class.getName());
     
     @FXML private ComboBox<Matiere> matiereComboBox;
+    @FXML private Button mySolutionsButton;
+    @FXML private Button manageUsersButton;
     
     private int userId;
     private String userRole;
@@ -35,16 +39,61 @@ public class MatiereController {
     }
 
     /**
-     * Sets the user role for the current logged-in user
+     * Sets the user role for the current logged-in user and updates UI accordingly
      */
     public void setUserRole(String userRole) {
         this.userRole = userRole;
         LOGGER.info("User role set to: " + userRole);
+        
+        // Try to update UI if JavaFX components are ready
+        if (matiereComboBox != null && matiereComboBox.getScene() != null) {
+            updateUIForRole();
+        }
     }
 
     @FXML
     public void initialize() {
         loadMatieres();
+        
+        // Add a listener to update UI when the scene is available
+        matiereComboBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null && userRole != null) {
+                updateUIForRole();
+            }
+        });
+    }
+    
+    /**
+     * Configure UI elements based on user role
+     */
+    public void updateUIForRole() {
+        if (userRole != null) {
+            if (!"Professeur".equals(userRole)) {
+                // Student role - hide certain buttons
+                if (mySolutionsButton != null) {
+                    mySolutionsButton.setVisible(false);
+                    mySolutionsButton.setManaged(false);
+                    LOGGER.info("Hiding 'Mes Solutions' button for students");
+                }
+                
+                if (manageUsersButton != null) {
+                    manageUsersButton.setVisible(false);
+                    manageUsersButton.setManaged(false);
+                    LOGGER.info("Hiding 'Gérer les utilisateurs' button for students");
+                }
+            } else {
+                // Professor role - ensure buttons are visible
+                if (mySolutionsButton != null) {
+                    mySolutionsButton.setVisible(true);
+                    mySolutionsButton.setManaged(true);
+                }
+                
+                if (manageUsersButton != null) {
+                    manageUsersButton.setVisible(true);
+                    manageUsersButton.setManaged(true);
+                }
+            }
+        }
     }
     
     /**
@@ -66,6 +115,13 @@ public class MatiereController {
      */
     @FXML
     private void selectMatiere() {
+        openSelectedMatiere();
+    }
+    
+    /**
+     * Open the selected matiere and close other windows
+     */
+    private void openSelectedMatiere() {
         Matiere matiere = matiereComboBox.getValue();
         
         if (matiere == null) {
@@ -75,6 +131,9 @@ public class MatiereController {
         }
         
         try {
+            // Get the current stage before we create a new one
+            Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
+            
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exercice_view.fxml"));
             Parent root = loader.load();
             
@@ -86,12 +145,13 @@ public class MatiereController {
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
-            Stage stage = new Stage();
-            stage.setTitle("Exercices - " + matiere.getNom());
-            stage.setScene(scene);
-            stage.show();
+            // Close all other windows except the current one
+            closeAllOtherWindows(currentStage);
             
-            closeCurrentStage();
+            // Change the scene of the current stage instead of creating a new one
+            currentStage.setTitle("Exercices - " + matiere.getNom());
+            currentStage.setScene(scene);
+            IconHelper.setStageIcon(currentStage);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error opening exercise view", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Navigation impossible", 
@@ -105,6 +165,12 @@ public class MatiereController {
     @FXML
     private void showMyExercises() {
         try {
+            // Get the current stage
+            Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
+            
+            // Close all other windows
+            closeAllOtherWindows(currentStage);
+            
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exercice_view.fxml"));
             Parent root = loader.load();
             
@@ -116,12 +182,10 @@ public class MatiereController {
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
-            Stage stage = new Stage();
-            stage.setTitle("Mes Exercices");
-            stage.setScene(scene);
-            stage.show();
-            
-            closeCurrentStage();
+            // Change the scene of the current stage instead of creating a new one
+            currentStage.setTitle("Mes Exercices");
+            currentStage.setScene(scene);
+            IconHelper.setStageIcon(currentStage);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error opening my exercises view", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Navigation impossible", 
@@ -134,7 +198,20 @@ public class MatiereController {
      */
     @FXML
     private void showMySolutions() {
+        // Only professors can access solutions
+        if (!"Professeur".equals(userRole)) {
+            showAlert(Alert.AlertType.WARNING, "Accès refusé", "Permission insuffisante", 
+                     "Seuls les professeurs peuvent accéder aux solutions.");
+            return;
+        }
+        
         try {
+            // Get the current stage
+            Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
+            
+            // Close all other windows
+            closeAllOtherWindows(currentStage);
+            
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/solution_view.fxml"));
             Parent root = loader.load();
             
@@ -146,12 +223,10 @@ public class MatiereController {
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
-            Stage stage = new Stage();
-            stage.setTitle("Mes Solutions");
-            stage.setScene(scene);
-            stage.show();
-            
-            closeCurrentStage();
+            // Change the scene of the current stage instead of creating a new one
+            currentStage.setTitle("Mes Solutions");
+            currentStage.setScene(scene);
+            IconHelper.setStageIcon(currentStage);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error opening my solutions view", e);
             showAlert(Alert.AlertType.ERROR, "Erreur", "Navigation impossible", 
@@ -183,6 +258,7 @@ public class MatiereController {
             Stage stage = new Stage();
             stage.setTitle("Gestion des utilisateurs");
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error opening user management view", e);
@@ -210,6 +286,7 @@ public class MatiereController {
             Stage stage = new Stage();
             stage.setTitle("Gestion des matières");
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
             
             closeCurrentStage();
@@ -223,6 +300,12 @@ public class MatiereController {
     @FXML
     private void handleLogout() {
         try {
+            // Get the current stage
+            Stage currentStage = (Stage) matiereComboBox.getScene().getWindow();
+            
+            // Close all other windows
+            closeAllOtherWindows(currentStage);
+            
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
             Parent root = loader.load();
             
@@ -232,12 +315,14 @@ public class MatiereController {
             Stage stage = new Stage();
             stage.setTitle("Connexion");
             stage.setScene(scene);
+            IconHelper.setStageIcon(stage);
             stage.show();
             
             closeCurrentStage();
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error during logout", e);
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Deconnexion impossible", e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error logging out", e);
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Déconnexion impossible", 
+                     "Impossible de se déconnecter: " + e.getMessage());
         }
     }
     
@@ -256,6 +341,54 @@ public class MatiereController {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
+        IconHelper.setDialogIcon(alert);
         alert.showAndWait();
+    }
+    
+    /**
+     * Alternative method name for choix_matiere.fxml
+     */
+    @FXML
+    private void ouvrirMesExercices() {
+        showMyExercises();
+    }
+    
+    /**
+     * Alternative method name for choix_matiere.fxml
+     */
+    @FXML
+    private void ouvrirMesSolutions() {
+        showMySolutions();
+    }
+    
+    /**
+     * Return to the login screen
+     */
+    @FXML
+    private void handleRetour() {
+        handleLogout();
+    }
+    
+    /**
+     * Close all other open windows except the specified one
+     */
+    private void closeAllOtherWindows(Stage exceptStage) {
+        // Create a list to hold stages to close to avoid ConcurrentModificationException
+        java.util.List<Stage> stagesToClose = new java.util.ArrayList<>();
+        
+        // Find all open windows
+        for (javafx.stage.Window window : javafx.stage.Window.getWindows()) {
+            if (window instanceof Stage && window.isShowing() && window != exceptStage) {
+                stagesToClose.add((Stage) window);
+            }
+        }
+        
+        // Close each stage
+        for (Stage stage : stagesToClose) {
+            LOGGER.info("Closing window: " + stage.getTitle());
+            stage.close();
+        }
+        
+        LOGGER.info("Closed " + stagesToClose.size() + " additional windows");
     }
 }
