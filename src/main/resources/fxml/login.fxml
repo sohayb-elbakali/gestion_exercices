@@ -40,7 +40,6 @@
         <HBox spacing="10" alignment="CENTER_RIGHT" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2">
             <Button text="Se connecter" onAction="#handleLogin" style="-fx-background-color: #4285F4; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
             <Button text="S'inscrire" onAction="#handleRegister" style="-fx-background-color: #0F9D58; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
-            <Button text="Retour" onAction="#handleRetour" style="-fx-background-color: #DB4437; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
         </HBox>
         
         <Label fx:id="statusLabel" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" 
